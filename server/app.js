@@ -31,6 +31,17 @@ const servesOwnFrontend = fs.existsSync(distPath);
 
 const app = express();
 
+// Production deploys sit behind a reverse proxy (nginx) on the same host,
+// which sets X-Forwarded-For to the real client IP. Without this, Express
+// (and express-rate-limit, and the Origin-check middleware's req.get("host"))
+// see every request as coming from the proxy itself — in particular, the
+// login/forgot-password rate limiters would then count ALL users' attempts
+// against one shared bucket (keyed by the proxy's own address) instead of
+// limiting each real IP separately, so one user's failed logins could lock
+// out everyone else. `1` trusts exactly one hop (the local nginx), not an
+// arbitrary chain an attacker could spoof further upstream.
+if (isProd) app.set("trust proxy", 1);
+
 // A crash inside a route handler used to leave a raw Express stack trace (with
 // file paths) visible to the client (see the ID-collision bug this actually
 // hit during testing) and left the process's exit behavior to chance. These
