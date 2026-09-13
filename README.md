@@ -25,9 +25,15 @@ Perintah `dev:full` menjalankan **dua proses sekaligus**:
 
 Buka `http://localhost:5173` di browser. Saat backend pertama kali dijalankan,
 database akan otomatis dibuat dan diisi data contoh (bisa dicek di log `[api]`:
-`Empty database — seeding demo data...`). Data disimpan permanen di
-`server/data/bsfdm.sqlite3` — setiap perubahan (stok biopond, klien baru,
-vendor, dsb.) akan tetap ada meskipun server di-restart atau browser di-refresh.
+`Empty control database — seeding roles/permissions, Community directory,
+and the demo organization...`). Aplikasi ini **multi-tenant**: setiap
+perusahaan (organisasi) punya database operasionalnya sendiri, terpisah dari
+perusahaan lain — lihat bagian [Multi-tenant, registrasi, dan
+paket](#multi-tenant-registrasi-dan-paket-freepaid) di bawah untuk detail
+arsitekturnya. Data disimpan permanen di `server/data/control.sqlite3` (akun,
+organisasi) dan `server/data/tenants/<org-id>.sqlite3` (satu file per
+organisasi) — setiap perubahan akan tetap ada meskipun server di-restart atau
+browser di-refresh.
 
 Untuk menjalankan hanya salah satu proses:
 
@@ -38,12 +44,14 @@ npm run server   # hanya backend/API (server/)
 
 ### Reset database ke data contoh awal
 
-Backend hanya melakukan seeding jika tabel `users` kosong, jadi aman untuk
-di-restart berkali-kali tanpa menghapus data QA. Untuk mengembalikan database
-ke kondisi awal (hapus semua perubahan, isi ulang data contoh):
+Backend hanya melakukan seeding jika tabel `roles` di control database kosong,
+jadi aman untuk di-restart berkali-kali tanpa menghapus data QA. Untuk
+mengembalikan database ke kondisi awal (hapus semua perubahan, isi ulang data
+contoh):
 
 ```bash
-rm server/data/bsfdm.sqlite3
+rm server/data/control.sqlite3 server/data/control.sqlite3-shm server/data/control.sqlite3-wal
+rm -rf server/data/tenants
 npm run server
 ```
 
@@ -58,6 +66,44 @@ RBAC di setiap role:
 | Super Admin | admin@bsfdm.com | bsfdm123 |
 | Operator (mobile) | andi@bsfdm.com | operator123 |
 | Role lain (Production Manager, Sales Admin, dst.) | lihat `server/seed.js` / tabel `users` | bsfdm123 |
+
+Akun-akun di atas semuanya berada di satu organisasi demo (`ORG-DEMO`,
+plan `paid`) yang dibuat otomatis saat database masih kosong. Perusahaan lain
+yang mendaftar lewat `/register` mendapat organisasi (dan database) mereka
+sendiri, terpisah total dari data demo ini.
+
+## Multi-tenant, registrasi, dan paket (free/paid)
+
+Aplikasi ini adalah produk SaaS multi-tenant: banyak perusahaan berbeda bisa
+mendaftar sendiri, masing-masing dengan data yang terisolasi penuh satu sama
+lain (lihat komentar di `server/tenantDb.js` untuk alasan arsitekturnya —
+satu file SQLite per organisasi, bukan kolom `org_id` di database bersama).
+
+- **Registrasi mandiri** — siapa pun bisa membuat akun sendiri lewat halaman
+  `/register` (link "Sign Up Free" di landing page & halaman login).
+  Pendaftar otomatis menjadi Super Admin dari organisasi barunya, langsung
+  login, dan organisasinya dimulai kosong (tanpa data contoh) di paket
+  **free**.
+- **Paket free vs paid** — paket free hanya bisa memakai modul **Production**
+  (biopond/panen); modul lain (Client, Vendor, Employee, Community, Report,
+  Notification, Setting/manajemen user) memerlukan paket **paid** — ditegakkan
+  di server (`server/middleware/plan.js`, balas `402` kalau diblokir), bukan
+  cuma disembunyikan di UI. Sidebar admin menampilkan ikon gembok untuk modul
+  yang terkunci.
+- **Belum ada payment gateway** — upgrade paket masih manual: setelah
+  pelanggan bayar di luar sistem (transfer bank, dsb.), jalankan:
+  ```bash
+  cd server
+  npm run set-org-plan                    # tanpa argumen: daftar semua organisasi + plan-nya
+  npm run set-org-plan -- <org-id> paid    # upgrade satu organisasi
+  ```
+  Perubahan langsung berlaku di request berikutnya, tidak perlu pelanggan
+  login ulang.
+- **Migrasi data lama ke multi-tenant** — kalau ada database single-tenant
+  lama (sebelum fitur multi-tenant ini ada) yang perlu dipindahkan menjadi
+  organisasi pertama, pakai `server/migrate-to-multitenant.js` (baca komentar
+  di file itu — selalu backup dan uji coba di salinan lokal dulu sebelum
+  dijalankan ke data produksi yang sesungguhnya).
 
 ## Deploy ke production
 
@@ -87,7 +133,8 @@ sekarang paket npm yang berdiri sendiri):
 |---|---|---|
 | `PORT` | `server/.env` | `4000` |
 | `CORS_ORIGIN` | `server/.env` | tidak perlu diisi untuk deploy single-host (lihat catatan di bawah); **wajib** diisi kalau frontend & backend di-deploy terpisah — server *refuse to start* di production tanpa ini pada kasus itu |
-| `DB_PATH` | `server/.env` | `server/data/bsfdm.sqlite3` — **wajib diarahkan ke volume persisten** di Render/Railway/Fly.io/Heroku (server *refuse to start* kalau terdeteksi platform itu tanpa `DB_PATH`) |
+| `DB_PATH` | `server/.env` | `server/data/control.sqlite3` (database bersama: akun, organisasi) — **wajib diarahkan ke volume persisten** di Render/Railway/Fly.io/Heroku (server *refuse to start* kalau terdeteksi platform itu tanpa `DB_PATH`) |
+| `TENANT_DB_DIR` | `server/.env` | folder `tenants/` di sebelah `DB_PATH` (satu file `.sqlite3` per organisasi) — harus di volume persisten yang sama dengan `DB_PATH` |
 | `BACKUP_DIR` | `server/.env` | folder `backups/` di sebelah database — pastikan juga di volume persisten |
 | `BACKUP_RETENTION_COUNT` | `server/.env` | `14` (jumlah backup harian yang disimpan) |
 | `JWT_SECRET` | `server/.env` | **wajib diisi tetap sebelum go-live** — server *refuse to start* di production tanpa ini |
@@ -118,7 +165,7 @@ arahkan `DB_PATH` (dan `BACKUP_DIR`) ke path di dalam volume itu (mis.
    - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` (lihat panduan Gmail/Google Workspace di bawah)
    - `NODE_ENV=production` (biasanya sudah otomatis di Render)
 5. Deploy. Render kasih domain `*.onrender.com` otomatis dengan HTTPS — bisa dipakai langsung, atau hubungkan domain sendiri lewat tab Settings → Custom Domain.
-6. Setelah deploy pertama sukses, cek log service: harus ada baris `[db] Empty database — seeding demo data...` (database baru, otomatis terisi data contoh + akun demo di atas). Segera ganti password akun `admin@bsfdm.com` atau buat user Super Admin baru lalu nonaktifkan/hapus akun demo.
+6. Setelah deploy pertama sukses, cek log service: harus ada baris `[db] Empty control database — seeding roles/permissions, Community directory, and the demo organization...` (database baru, otomatis terisi role/permission template + organisasi & akun demo di atas). Untuk pelanggan sungguhan, daftar lewat `/register` di aplikasi — itu membuat organisasi baru yang terpisah dari data demo. Segera ganti password akun demo (`admin@bsfdm.com`) kalau organisasi demo ini tidak akan dipakai, atau abaikan saja (datanya tidak bocor ke organisasi lain).
 7. Railway dan Fly.io langkahnya serupa (attach volume, set env vars yang sama) — beda di detail UI saja.
 
 ### Mengirim email sungguhan lewat Gmail / Google Workspace
@@ -162,6 +209,17 @@ Render/Railway. Dalam kasus ini:
 - **Endpoint manajemen user & role permission** (`POST/PATCH/DELETE /api/users`,
   `PATCH /api/users/roles/:id/permissions`) dibatasi hanya untuk role
   `Super Admin` di sisi server (bukan cuma disembunyikan di UI).
+- **Matriks izin per-modul (view/create/edit/delete/export/approve) ditegakkan
+  di server** (`requirePermission`/`requireOperatorOrPermission` di
+  `server/middleware/auth.js`) di setiap route mutasi (biopond, klien,
+  vendor, karyawan, dst.) — bukan cuma UI yang menyembunyikan tombol.
+- **Isolasi data antar organisasi bersifat struktural**: setiap organisasi
+  punya file database sendiri (`server/tenantDb.js`), jadi satu query yang
+  lupa memfilter tidak bisa membocorkan data organisasi lain — beda dengan
+  pendekatan kolom `org_id` di database bersama.
+- **Paket free/paid ditegakkan di server** (`server/middleware/plan.js`,
+  balas `402` untuk modul yang terkunci), tidak bisa dilewati hanya dengan
+  memanggil API langsung.
 - CORS bisa dibatasi lewat `CORS_ORIGIN` (default merefleksikan origin
   request, cocok untuk demo/QA) dan sudah mendukung `credentials: true` untuk
   cookie lintas domain.
@@ -174,12 +232,12 @@ acak baru setiap kali proses di-restart — artinya semua sesi login akan
 logout sendiri setiap restart, dan kalau nanti ada lebih dari satu instance
 server, token dari satu instance tidak akan valid di instance lain.
 
-Yang **masih belum** ada dan bisa dipertimbangkan lebih lanjut (di luar
-cakupan tiga perbaikan di atas): validasi input yang lebih ketat & konsisten
-di setiap route, dan penegakan matriks izin per-modul (view/create/edit/dst.)
-di sisi server secara menyeluruh — saat ini baru endpoint user & role yang
-dijaga eksplisit; endpoint lain (biopond, klien, vendor, dst.) hanya
-mensyaratkan "sudah login", belum mengecek permission spesifik per role.
+Yang **masih belum** ada dan bisa dipertimbangkan lebih lanjut: payment
+gateway (upgrade paket masih manual lewat `set-org-plan.js`, lihat bagian
+[Multi-tenant, registrasi, dan paket](#multi-tenant-registrasi-dan-paket-freepaid)),
+verifikasi email saat registrasi, dan matriks role/permission per-organisasi
+(saat ini role & permission adalah template global yang sama untuk semua
+organisasi, bukan bisa dikustomisasi per perusahaan).
 
 ## Struktur folder
 
@@ -210,12 +268,16 @@ di-deploy terpisah kalau perlu.
     ├── package.json        # dependency Express/bcrypt/cors saja
     ├── .env.example
     ├── index.js             # entry point Express, mount semua route di /api
-    ├── db.js                 # bootstrap koneksi SQLite + auto-seed
-    ├── schema.sql            # struktur seluruh tabel database
+    ├── db.js                 # bootstrap koneksi control database + auto-seed
+    ├── tenantDb.js            # bootstrap koneksi per-organisasi (tenant) database
+    ├── schema-control.sql    # struktur tabel control db (auth, organizations, communities)
+    ├── schema-tenant.sql     # struktur tabel tenant db (semua data operasional per organisasi)
     ├── seed.js                # mengisi database dari client/src/data/dummyData.js
     ├── routes/                 # racks, hotels, vendors, employees, users,
     │                            productionLogs, misc (sales, calendar, dst.)
-    └── data/bsfdm.sqlite3     # file database (dibuat otomatis, tidak di-commit)
+    └── data/
+        ├── control.sqlite3    # database bersama (auth, organizations) — dibuat otomatis, tidak di-commit
+        └── tenants/<org-id>.sqlite3  # satu file per organisasi — dibuat otomatis, tidak di-commit
 ```
 
 Satu-satunya "penyeberangan" yang disengaja antara kedua paket:

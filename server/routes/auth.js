@@ -1,8 +1,9 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import rateLimit from "express-rate-limit";
-import { db, nowISO } from "../db.js";
+import { db, nowISO, nextId } from "../db.js";
 import { signToken, setAuthCookie, clearAuthCookie, requireAuth } from "../middleware/auth.js";
+import { getTenantDb } from "../tenantDb.js";
 import { sendPasswordResetEmail } from "../email.js";
 import { hashToken, issueResetToken, resolveAppUrl } from "../passwordReset.js";
 
@@ -13,6 +14,7 @@ const toUser = (u) => ({
   status: u.status, lastLogin: u.last_login, createdDate: u.created_date,
 });
 const toRole = (r) => ({ id: r.id, name: r.name, description: r.description });
+const toOrg = (o) => ({ id: o.id, name: o.name, plan: o.plan });
 
 // Slows down credential-stuffing/brute-force attempts against the login form.
 // Keyed by IP; generous enough not to lock out a real user mistyping a password.
@@ -39,17 +41,87 @@ router.post("/login", loginLimiter, (req, res) => {
   db.prepare("UPDATE users SET last_login = ? WHERE id = ?").run(nowISO(), user.id);
 
   const role = db.prepare("SELECT * FROM roles WHERE id = ?").get(user.role_id);
+  const org = db.prepare("SELECT * FROM organizations WHERE id = ?").get(user.org_id);
   setAuthCookie(res, signToken(user));
 
   res.json({
     user: { ...toUser(user), lastLogin: nowISO() },
     role: toRole(role),
+    organization: toOrg(org),
   });
 });
 
 router.post("/logout", (req, res) => {
   clearAuthCookie(res);
   res.status(204).end();
+});
+
+// Generous enough for a real founder retyping details after a typo, tight
+// enough to blunt a script hammering this into spinning up many organizations
+// (each signup creates a whole new tenant database — a heavier write than a
+// login attempt).
+const registerLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 8,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many signup attempts. Please wait a few minutes and try again." },
+});
+
+function slugify(name) {
+  return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+// New self-registration signs the founder in as role-super-admin of a brand
+// new organization on the free plan — no email verification gate and no
+// manual approval step, matching the frictionless-signup norm for a freemium
+// product (see the multi-tenant plan). Upgrading to paid happens manually for
+// now via server/set-org-plan.js.
+router.post("/register", registerLimiter, async (req, res) => {
+  const { companyName, name, email, password } = req.body || {};
+  if (!companyName || !name || !email || !password) {
+    return res.status(400).json({ error: "companyName, name, email, and password are required." });
+  }
+  if (password.length < 8) {
+    return res.status(400).json({ error: "Password must be at least 8 characters." });
+  }
+
+  const trimmedEmail = String(email).trim();
+  const dup = db.prepare("SELECT id FROM users WHERE lower(email) = lower(?)").get(trimmedEmail);
+  if (dup) return res.status(409).json({ error: "An account with this email already exists." });
+
+  const orgId = nextId(db, "organizations", "ORG");
+  const baseSlug = slugify(companyName) || "company";
+  let slug = baseSlug;
+  let suffix = 2;
+  while (db.prepare("SELECT id FROM organizations WHERE slug = ?").get(slug)) {
+    slug = `${baseSlug}-${suffix++}`;
+  }
+
+  db.prepare("INSERT INTO organizations (id, name, slug, plan, status, created_at) VALUES (?,?,?,?,?,?)")
+    .run(orgId, companyName.trim(), slug, "free", "active", nowISO());
+
+  const userId = nextId(db, "users", "USR", 2);
+  db.prepare(
+    "INSERT INTO users (id, org_id, name, email, password, role_id, status, last_login, created_date) VALUES (?,?,?,?,?,?,?,?,?)"
+  ).run(userId, orgId, name.trim(), trimmedEmail, bcrypt.hashSync(password, 10), "role-super-admin", "Active", nowISO(), nowISO().slice(0, 10));
+
+  // Provisions the new org's tenant database right away (empty — no demo
+  // data) rather than waiting for the first business-data request to
+  // lazily create it, so the very first dashboard load isn't the one
+  // paying that cost.
+  getTenantDb(orgId);
+
+  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
+  const role = db.prepare("SELECT * FROM roles WHERE id = ?").get("role-super-admin");
+  const org = db.prepare("SELECT * FROM organizations WHERE id = ?").get(orgId);
+  setAuthCookie(res, signToken(user));
+
+  res.status(201).json({
+    user: toUser(user),
+    role: toRole(role),
+    organization: toOrg(org),
+  });
 });
 
 // Generous enough for a real user retrying a typo'd email, tight enough to
@@ -109,7 +181,8 @@ router.get("/me", requireAuth, (req, res) => {
   const user = db.prepare("SELECT * FROM users WHERE id = ?").get(req.auth.id);
   if (!user || user.status !== "Active") return res.status(401).json({ error: "Session no longer valid." });
   const role = db.prepare("SELECT * FROM roles WHERE id = ?").get(user.role_id);
-  res.json({ user: toUser(user), role: toRole(role) });
+  const org = db.prepare("SELECT * FROM organizations WHERE id = ?").get(user.org_id);
+  res.json({ user: toUser(user), role: toRole(role), organization: toOrg(org) });
 });
 
 export default router;

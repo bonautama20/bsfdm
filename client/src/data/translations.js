@@ -11,6 +11,7 @@ export const translations = {
     "landing.nav.contact": "Contact",
     "landing.nav.community": "Community",
     "landing.nav.login": "Login",
+    "landing.nav.register": "Sign Up Free",
     "landing.nav.openMenu": "Open menu",
     "landing.nav.closeMenu": "Close menu",
 
@@ -209,6 +210,23 @@ export const translations = {
     "login.demoAccounts": "Demo Accounts",
     "login.fillAdmin": "Fill Admin",
     "login.fillOperator": "Fill Operator",
+    "login.noAccount": "Don't have an account?",
+    "login.signUpFree": "Sign up free",
+
+    // ---------- Self-registration ----------
+    "register.backToLogin": "Back to login",
+    "register.freeBadge": "Free plan available",
+    "register.title": "Create your account",
+    "register.subtitle": "Start managing your BSF production for free. Upgrade any time for full access.",
+    "register.companyLabel": "Company Name",
+    "register.companyPlaceholder": "Your farm or company name",
+    "register.nameLabel": "Your Name",
+    "register.namePlaceholder": "Full name",
+    "register.passwordHint": "At least 8 characters.",
+    "register.createAccount": "Create Account",
+    "register.creating": "Creating Account...",
+    "register.haveAccount": "Already have an account?",
+    "register.error": "Something went wrong. Please try again.",
 
     // ---------- Forgot / reset password ----------
     "forgotPassword.backToLogin": "Back to login",
@@ -245,6 +263,11 @@ export const translations = {
     "sidebar.report": "Report",
     "sidebar.notification": "Notification",
     "sidebar.setting": "Setting",
+
+    // ---------- Free/paid plan gating ----------
+    "plan.lockedTooltip": "Paid feature — upgrade to unlock",
+    "plan.upgradeTitle": "This is a paid feature",
+    "plan.upgradeDesc": "Your organization is on the free plan, which includes Production tracking only. Contact your BSFDM representative to upgrade and unlock this and every other module.",
 
     // ---------- Admin header ----------
     "header.searchPlaceholder": "Search batches, bioponds, clients, employees…",
@@ -1054,6 +1077,7 @@ export const translations = {
     "landing.nav.contact": "Kontak",
     "landing.nav.community": "Komunitas",
     "landing.nav.login": "Masuk",
+    "landing.nav.register": "Daftar Gratis",
     "landing.nav.openMenu": "Buka menu",
     "landing.nav.closeMenu": "Tutup menu",
 
@@ -1252,6 +1276,23 @@ export const translations = {
     "login.demoAccounts": "Akun Demo",
     "login.fillAdmin": "Isi Admin",
     "login.fillOperator": "Isi Operator",
+    "login.noAccount": "Belum punya akun?",
+    "login.signUpFree": "Daftar gratis",
+
+    // ---------- Daftar akun baru ----------
+    "register.backToLogin": "Kembali ke login",
+    "register.freeBadge": "Tersedia paket gratis",
+    "register.title": "Buat akun Anda",
+    "register.subtitle": "Mulai kelola produksi BSF Anda secara gratis. Upgrade kapan saja untuk akses penuh.",
+    "register.companyLabel": "Nama Perusahaan",
+    "register.companyPlaceholder": "Nama peternakan atau perusahaan Anda",
+    "register.nameLabel": "Nama Anda",
+    "register.namePlaceholder": "Nama lengkap",
+    "register.passwordHint": "Minimal 8 karakter.",
+    "register.createAccount": "Buat Akun",
+    "register.creating": "Membuat Akun...",
+    "register.haveAccount": "Sudah punya akun?",
+    "register.error": "Terjadi kesalahan. Silakan coba lagi.",
 
     // ---------- Lupa / atur ulang kata sandi ----------
     "forgotPassword.backToLogin": "Kembali ke login",
@@ -1288,6 +1329,11 @@ export const translations = {
     "sidebar.report": "Laporan",
     "sidebar.notification": "Notifikasi",
     "sidebar.setting": "Pengaturan",
+
+    // ---------- Gating paket gratis/berbayar ----------
+    "plan.lockedTooltip": "Fitur berbayar — upgrade untuk membuka",
+    "plan.upgradeTitle": "Ini adalah fitur berbayar",
+    "plan.upgradeDesc": "Organisasi Anda menggunakan paket gratis, yang hanya mencakup pelacakan Produksi. Hubungi perwakilan BSFDM Anda untuk upgrade dan membuka fitur ini beserta modul lainnya.",
 
     // ---------- Admin header ----------
     "header.searchPlaceholder": "Cari batch, biopond, klien, karyawan…",

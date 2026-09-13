@@ -1,8 +1,14 @@
-// Seeds a fresh database with the same realistic demo data the app has been
-// built and tested against — imported directly from the frontend's dummy data
-// module (pure data, no React) so the two never drift apart. This is the one
+// Seeds demo data — imported directly from the frontend's dummy data module
+// (pure data, no React) so the two never drift apart. This is the one
 // deliberate exception to the client/server separation: seed.js reaches into
 // client/src purely for this static data file, not for any runtime code.
+//
+// Split across the control/tenant database boundary (see the multi-tenant
+// plan): `seedControlBase` and `seedDemoOrgAndUsers` seed the shared control
+// database (server/db.js); `seedTenantDemoData` seeds one tenant's own
+// database (server/tenantDb.js) — called only for the fixed demo
+// organization (DEMO_ORG_ID), never for a real signup's brand-new org, which
+// starts with an empty tenant database instead.
 import bcrypt from "bcryptjs";
 import {
   biopondRacks, hotels, wasteHistoryByHotel, vendors, employees, attendanceToday,
@@ -10,7 +16,13 @@ import {
   breederCages, kasgotBatches, salesTransactions, calendarEvents, communities,
 } from "../client/src/data/dummyData.js";
 
-export function seedDatabase(db) {
+export const DEMO_ORG_ID = "ORG-DEMO";
+
+// Roles/permissions (shared global template — see the plan's scope cut on
+// per-org customization) and the Community directory (shared/cross-tenant)
+// — everything here has no org_id and only ever needs seeding once, on a
+// brand-new control database.
+export function seedControlBase(db) {
   const insertRole = db.prepare("INSERT INTO roles (id, name, description) VALUES (?, ?, ?)");
   roles.forEach((r) => insertRole.run(r.id, r.name, r.description));
 
@@ -23,17 +35,40 @@ export function seedDatabase(db) {
     });
   });
 
-  // Users. `admin@bsfdm.com` is added explicitly as a real row (it used to be a
-  // synthetic fallback identity in the old in-memory AuthContext); every seeded
-  // user gets a demo password (hashed at rest, same plaintext documented in the
-  // README) so QA can log in and test every role.
-  const insertUser = db.prepare("INSERT INTO users (id, name, email, password, role_id, status, last_login, created_date) VALUES (?,?,?,?,?,?,?,?)");
-  insertUser.run("USR-00", "Farm Manager", "admin@bsfdm.com", bcrypt.hashSync("bsfdm123", 10), "role-super-admin", "Active", null, "2018-08-01");
+  const insertCommunity = db.prepare(
+    "INSERT INTO communities (id,name,phone,address,kabupaten,provinsi,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)"
+  );
+  const communityTs = new Date().toISOString();
+  communities.forEach((c, i) => {
+    insertCommunity.run(`KOM-${String(i + 1).padStart(3, "0")}`, c.name, c.phone, c.address, c.kabupaten, c.provinsi, communityTs, communityTs);
+  });
+}
+
+// The one demo organization (plan: paid, so every module is visible) plus
+// its demo users — every seeded user gets a demo password (hashed at rest,
+// same plaintext documented in the README) so QA can log in and test every
+// role. Real signups (Phase 2) create their own organization + first user
+// instead of ever touching this.
+export function seedDemoOrgAndUsers(db) {
+  db.prepare("INSERT INTO organizations (id, name, slug, plan, status, created_at) VALUES (?,?,?,?,?,?)")
+    .run(DEMO_ORG_ID, "BSFDM Demo", "bsfdm-demo", "paid", "active", new Date().toISOString());
+
+  const insertUser = db.prepare(
+    "INSERT INTO users (id, org_id, name, email, password, role_id, status, last_login, created_date) VALUES (?,?,?,?,?,?,?,?,?)"
+  );
+  // `admin@bsfdm.com` is added explicitly as a real row (it used to be a
+  // synthetic fallback identity in the old in-memory AuthContext).
+  insertUser.run("USR-00", DEMO_ORG_ID, "Farm Manager", "admin@bsfdm.com", bcrypt.hashSync("bsfdm123", 10), "role-super-admin", "Active", null, "2018-08-01");
   users.forEach((u) => {
     const password = u.email === "andi@bsfdm.com" ? "operator123" : "bsfdm123";
-    insertUser.run(u.id, u.name, u.email, bcrypt.hashSync(password, 10), u.roleId, u.status, u.lastLogin || null, u.createdDate);
+    insertUser.run(u.id, DEMO_ORG_ID, u.name, u.email, bcrypt.hashSync(password, 10), u.roleId, u.status, u.lastLogin || null, u.createdDate);
   });
+}
 
+// All of one organization's own operational data — called against a tenant
+// database. Only ever invoked for DEMO_ORG_ID; every other (real) org's
+// tenant database is created schema-only, empty, ready for their own data.
+export function seedTenantDemoData(db) {
   const insertRack = db.prepare("INSERT INTO racks (id, name, created_at, updated_at) VALUES (?,?,?,?)");
   const insertBiopond = db.prepare(
     "INSERT INTO bioponds (id, rack_id, number, status, baby_maggot_qty, date_in, feed_in_kg, feed_source, harvest_date, created_by, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"
@@ -114,20 +149,12 @@ export function seedDatabase(db) {
 
   const insertNotif = db.prepare("INSERT INTO notification_settings (id, label, in_app, email, whatsapp, timing) VALUES (?,?,?,?,?,?)");
   notificationTypes.forEach((n) => insertNotif.run(n.id, n.label, n.inApp ? 1 : 0, n.email ? 1 : 0, n.whatsapp ? 1 : 0, n.timing));
-
-  const insertCommunity = db.prepare(
-    "INSERT INTO communities (id,name,phone,address,kabupaten,provinsi,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)"
-  );
-  const communityTs = new Date().toISOString();
-  communities.forEach((c, i) => {
-    insertCommunity.run(`KOM-${String(i + 1).padStart(3, "0")}`, c.name, c.phone, c.address, c.kabupaten, c.provinsi, communityTs, communityTs);
-  });
 }
 
 // Backfills any (role, module) permission rows that don't exist yet on an
-// already-seeded database — e.g. after a new module (Vendor, Employee,
-// Community) is added to rolePermissions in dummyData.js. Safe to call on
-// every boot: existing rows are left untouched, only gaps are filled in.
+// already-seeded control database — e.g. after a new module (Vendor,
+// Employee, Community) is added to rolePermissions in dummyData.js. Safe to
+// call on every boot: existing rows are left untouched, only gaps are filled in.
 export function migrateRolePermissions(db) {
   const existing = new Set(
     db.prepare("SELECT role_id || ':' || module AS k FROM role_permissions").all().map((r) => r.k)

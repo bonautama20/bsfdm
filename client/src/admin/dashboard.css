@@ -63,7 +63,11 @@
 .db-nav-item svg{ flex-shrink:0; }
 .db-nav-item:hover{ background:rgba(255,255,255,.08); color:#fff; }
 .db-nav-item.active{ background:var(--db-accent); color:#fff; }
+.db-nav-item.locked{ color:rgba(255,255,255,.4); }
+.db-nav-item.locked .lock-ic{ margin-left:auto; flex-shrink:0; opacity:.8; }
+.db-nav-item.locked.active{ background:rgba(227,107,20,.35); color:#fff; }
 .db-shell.collapsed .db-nav-item span{ display:none; }
+.db-shell.collapsed .db-nav-item .lock-ic{ display:none; }
 .db-shell.collapsed .db-nav-item{ justify-content:center; }
 
 .db-sidebar-bottom{ border-top:1px solid rgba(255,255,255,.1); padding:14px 12px; position:relative; }

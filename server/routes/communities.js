@@ -1,12 +1,16 @@
 import { Router } from "express";
 import { db, nowISO } from "../db.js";
 import { requirePermission } from "../middleware/auth.js";
+import { requirePlan } from "../middleware/plan.js";
 import { validate } from "../validate.js";
 
 // Authenticated admin CRUD for the cultivator community directory — mounted
 // in index.js AFTER requireAuth. Returns the full record including `phone`;
-// see communityPublic.js for the phone-redacted public landing-page view.
+// see communityPublic.js for the phone-redacted public landing-page view
+// (which stays free and unauthenticated regardless of any org's plan).
 const router = Router();
+// Paid-only — see the multi-tenant plan's Phase 3.
+router.use(requirePlan("Community"));
 
 const communitySchema = {
   name: { maxLength: 200 },

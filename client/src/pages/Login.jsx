@@ -138,6 +138,10 @@ export default function LoginPage() {
         .login .submit{margin-top:24px; width:100%; display:inline-flex; align-items:center; justify-content:center; gap:8px; background:#01613C; color:#fff; font-family:'Manrope', sans-serif; font-weight:700; font-size:.9rem; letter-spacing:.02em; text-transform:uppercase; padding:14px; border:none; border-radius:12px; transition:transform .2s ease, box-shadow .2s ease;}
         .login .submit:hover{transform:translateY(-2px); box-shadow:0 14px 34px rgba(1,97,60,.25);}
 
+        .login .switch-line{margin-top:20px; text-align:center; font-size:.86rem; color:#4C6157;}
+        .login .switch-line a{font-weight:700; color:#01613C;}
+        .login .switch-line a:hover{text-decoration:underline;}
+
         .login .demo-box{margin-top:26px; border:1.5px dashed #E36B14; background:#FFF6EF; border-radius:12px; padding:14px 16px;}
         .login .demo-box .dt{font-size:.76rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:#E36B14; margin-bottom:8px;}
         .login .demo-box .dl{font-size:.86rem; color:#0F241A; line-height:1.7;}
@@ -242,6 +246,11 @@ export default function LoginPage() {
               <LogIn size={16} /> {submitting ? t("login.loggingIn") : t("login.logIn")}
             </button>
           </form>
+
+          <div className="switch-line">
+            {t("login.noAccount")}{" "}
+            <a href="/register" onClick={(e) => { e.preventDefault(); navigate("/register"); }}>{t("login.signUpFree")}</a>
+          </div>
 
           <div className="demo-box">
             <div className="dt">{t("login.demoAccounts")}</div>

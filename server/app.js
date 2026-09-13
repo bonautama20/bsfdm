@@ -11,7 +11,7 @@ import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { db } from "./db.js";
-import { requireAuth } from "./middleware/auth.js";
+import { requireAuth, attachTenantDb } from "./middleware/auth.js";
 
 import authRouter from "./routes/auth.js";
 import racksRouter from "./routes/racks.js";
@@ -130,6 +130,11 @@ app.use("/api/community", communityPublicRouter);
 
 // Every other /api route requires a valid session from here on.
 app.use("/api", requireAuth);
+
+// Resolves req.auth.orgId (from the JWT) to that organization's own tenant
+// database and attaches it as req.db. Routes whose data lives in the control
+// database instead (users, communities) simply don't use req.db.
+app.use("/api", attachTenantDb);
 
 app.use("/api/racks", racksRouter);
 app.use("/api/hotels", hotelsRouter);

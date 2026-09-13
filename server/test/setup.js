@@ -17,4 +17,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // test/helpers.js's startTestServer) — cleaning up here in setup.js would
 // risk racing a sibling process that's mid-run against the same glob.
 process.env.DB_PATH = path.join(__dirname, `test.${process.pid}.sqlite3`);
+// Same per-process isolation for the tenant databases db.js's control db
+// spawns (see server/tenantDb.js) — otherwise two test processes would
+// race to create/seed the same tenants/ORG-DEMO.sqlite3 file.
+process.env.TENANT_DB_DIR = path.join(__dirname, `test.${process.pid}.tenants`);
 process.env.JWT_SECRET = "test-only-secret-do-not-use-in-production";

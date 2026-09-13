@@ -2,13 +2,17 @@ import { DatabaseSync } from "node:sqlite";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { seedDatabase, migrateRolePermissions } from "./seed.js";
+import { seedControlBase, seedDemoOrgAndUsers, migrateRolePermissions } from "./seed.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// DB_PATH can be overridden via env — e.g. to point at a mounted persistent
-// volume on hosts like Render/Railway/Fly.io whose local filesystem is ephemeral.
-export const DB_PATH = process.env.DB_PATH || path.join(__dirname, "data", "bsfdm.sqlite3");
-const SCHEMA_PATH = path.join(__dirname, "schema.sql");
+// The CONTROL database — auth (users/roles/permissions), the organization
+// registry, and the shared cross-tenant Community directory. Each
+// organization's own operational data lives in a separate per-tenant
+// database instead — see tenantDb.js. DB_PATH can be overridden via env —
+// e.g. to point at a mounted persistent volume on hosts like
+// Render/Railway/Fly.io whose local filesystem is ephemeral.
+export const DB_PATH = process.env.DB_PATH || path.join(__dirname, "data", "control.sqlite3");
+const SCHEMA_PATH = path.join(__dirname, "schema-control.sql");
 
 // Best-effort detection of known ephemeral-filesystem hosts (Render, Railway,
 // Fly.io, Heroku) via the env vars they set on every deploy. If DB_PATH hasn't
@@ -42,26 +46,25 @@ export const db = new DatabaseSync(DB_PATH);
 db.exec("PRAGMA journal_mode = WAL;");
 db.exec(fs.readFileSync(SCHEMA_PATH, "utf-8"));
 
-// Lightweight migrations: `CREATE TABLE IF NOT EXISTS` above only affects brand
-// new databases, so columns added to schema.sql after a DB already exists on
-// disk need to be patched in here too, one ALTER TABLE per new column.
-function ensureColumn(table, column, type) {
-  const cols = db.prepare(`PRAGMA table_info(${table})`).all();
+// Lightweight migrations: `CREATE TABLE IF NOT EXISTS` above only affects
+// brand new databases, so columns added to a schema after a DB already
+// exists on disk need to be patched in here too, one ALTER TABLE per new
+// column. Exported so tenantDb.js can reuse it for tenant-database schemas.
+export function ensureColumn(targetDb, table, column, type) {
+  const cols = targetDb.prepare(`PRAGMA table_info(${table})`).all();
   if (!cols.some((c) => c.name === column)) {
-    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
+    targetDb.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
   }
 }
-ensureColumn("hotels", "hotel_pic_phone", "TEXT");
-ensureColumn("vendors", "pic_position", "TEXT");
-ensureColumn("egg_batches", "created_by", "TEXT");
 
-const { count } = db.prepare("SELECT COUNT(*) AS count FROM users").get();
-if (count === 0) {
-  console.log("[db] Empty database — seeding demo data...");
-  seedDatabase(db);
-  console.log("[db] Seed complete.");
+const { count: roleCount } = db.prepare("SELECT COUNT(*) AS count FROM roles").get();
+if (roleCount === 0) {
+  console.log("[db] Empty control database — seeding roles/permissions, Community directory, and the demo organization...");
+  seedControlBase(db);
+  seedDemoOrgAndUsers(db);
+  console.log("[db] Control database seed complete.");
 } else {
-  console.log(`[db] Using existing database at ${DB_PATH} (${count} users).`);
+  console.log(`[db] Using existing control database at ${DB_PATH}.`);
   // Fills in any (role, module) permission rows a fresh seed already has but
   // an older existing database doesn't yet (e.g. a module added later).
   migrateRolePermissions(db);
@@ -71,11 +74,13 @@ if (count === 0) {
 // already in use as soon as any row is deleted, which then collides with an
 // existing higher-numbered id on the next insert (UNIQUE constraint failure;
 // this actually happened to the Community feature during testing). `prefix`
-// excludes the trailing dash, e.g. nextId("hotels", "HTL", 2) -> "HTL-07".
-// padLength 0 (default) means no zero-padding (e.g. nextId("egg_batches", "EB")).
-export function nextId(table, prefix, padLength = 0) {
+// excludes the trailing dash, e.g. nextId(db, "hotels", "HTL", 2) -> "HTL-07".
+// padLength 0 (default) means no zero-padding. Takes an explicit `db` (the
+// control db, or a tenant db from tenantDb.js) rather than closing over a
+// single module-level connection, since there are many databases now.
+export function nextId(targetDb, table, prefix, padLength = 0) {
   const dashPrefix = `${prefix}-`;
-  const { maxNum } = db.prepare(
+  const { maxNum } = targetDb.prepare(
     `SELECT MAX(CAST(SUBSTR(id, ${dashPrefix.length + 1}) AS INTEGER)) AS maxNum FROM ${table}`
   ).get();
   const next = (maxNum || 0) + 1;

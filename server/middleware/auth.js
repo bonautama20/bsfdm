@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import crypto from "node:crypto";
 import { db } from "../db.js";
+import { getTenantDb } from "../tenantDb.js";
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -32,7 +33,7 @@ export const COOKIE_NAME = "bsfdm_token";
 const TOKEN_TTL = "7d";
 
 export function signToken(user) {
-  return jwt.sign({ sub: user.id, roleId: user.role_id }, JWT_SECRET, { expiresIn: TOKEN_TTL });
+  return jwt.sign({ sub: user.id, roleId: user.role_id, orgId: user.org_id }, JWT_SECRET, { expiresIn: TOKEN_TTL });
 }
 
 // Same-origin deployments (the default — see server/index.js static serving)
@@ -57,17 +58,29 @@ export function verifyToken(token) {
   return jwt.verify(token, JWT_SECRET);
 }
 
-// Attaches req.auth = { id, roleId } when a valid cookie is present; otherwise 401s.
+// Attaches req.auth = { id, roleId, orgId } when a valid cookie is present;
+// otherwise 401s.
 export function requireAuth(req, res, next) {
   const token = req.cookies?.[COOKIE_NAME];
   if (!token) return res.status(401).json({ error: "Not authenticated." });
   try {
     const payload = verifyToken(token);
-    req.auth = { id: payload.sub, roleId: payload.roleId };
+    req.auth = { id: payload.sub, roleId: payload.roleId, orgId: payload.orgId };
     next();
   } catch {
     return res.status(401).json({ error: "Session expired or invalid. Please log in again." });
   }
+}
+
+// Use after requireAuth on any route that touches an organization's own
+// business data (i.e. everything except the control-DB routes — auth,
+// users, communities): resolves req.auth.orgId to that tenant's own SQLite
+// database and attaches it as req.db. Route handlers use req.db exactly like
+// the old module-level `db` import used to work, just tenant-scoped.
+export function attachTenantDb(req, res, next) {
+  if (!req.auth?.orgId) return res.status(401).json({ error: "Not authenticated." });
+  req.db = getTenantDb(req.auth.orgId);
+  next();
 }
 
 // Use after requireAuth to restrict an endpoint to specific role ids.

@@ -11,11 +11,20 @@ export async function startTestServer() {
   return { server, baseUrl: `http://127.0.0.1:${port}` };
 }
 
-// Removes this process's own SQLite test file (see test/setup.js — one per
-// process, named by PID) — call from an `after()` hook alongside
-// `server.close()`.
+// Removes this process's own SQLite test file(s) (see test/setup.js — one
+// control db + one tenant-db directory per process, named by PID) — call
+// from an `after()` hook alongside `server.close()`. Also removes the
+// WAL/SHM sidecar files SQLite leaves next to the main file (a plain
+// rmSync of DB_PATH alone doesn't touch those).
 export function cleanupTestDb() {
-  if (process.env.DB_PATH) fs.rmSync(process.env.DB_PATH, { force: true });
+  if (process.env.DB_PATH) {
+    for (const suffix of ["", "-wal", "-shm"]) {
+      fs.rmSync(`${process.env.DB_PATH}${suffix}`, { force: true });
+    }
+  }
+  if (process.env.TENANT_DB_DIR) {
+    fs.rmSync(process.env.TENANT_DB_DIR, { force: true, recursive: true });
+  }
 }
 
 export function makeClient(baseUrl) {

@@ -1,37 +1,11 @@
--- BSFDM database schema — tailored to the BSF Data Management System
--- (Admin panel + Operator mobile module). SQLite via Node's built-in node:sqlite.
+-- Tenant database — one separate SQLite file per organization (see
+-- server/tenantDb.js), created fresh (empty) the first time an org is seen.
+-- Everything here is one company's own operational data; isolation is
+-- structural (a different file per tenant), not a WHERE-clause discipline.
+-- Auth/org-registry/the shared Community directory live in the control
+-- database instead — see schema-control.sql.
 
 PRAGMA foreign_keys = ON;
-
--- ---------- Auth / RBAC ----------
-CREATE TABLE IF NOT EXISTS roles (
-  id          TEXT PRIMARY KEY,
-  name        TEXT NOT NULL,
-  description TEXT
-);
-
-CREATE TABLE IF NOT EXISTS role_permissions (
-  role_id TEXT NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
-  module  TEXT NOT NULL,
-  can_view    INTEGER NOT NULL DEFAULT 0,
-  can_create  INTEGER NOT NULL DEFAULT 0,
-  can_edit    INTEGER NOT NULL DEFAULT 0,
-  can_delete  INTEGER NOT NULL DEFAULT 0,
-  can_export  INTEGER NOT NULL DEFAULT 0,
-  can_approve INTEGER NOT NULL DEFAULT 0,
-  PRIMARY KEY (role_id, module)
-);
-
-CREATE TABLE IF NOT EXISTS users (
-  id            TEXT PRIMARY KEY,
-  name          TEXT NOT NULL,
-  email         TEXT NOT NULL UNIQUE,
-  password      TEXT NOT NULL, -- bcrypt hash, never plaintext (see server/routes/auth.js)
-  role_id       TEXT NOT NULL REFERENCES roles(id),
-  status        TEXT NOT NULL DEFAULT 'Active',
-  last_login    TEXT,
-  created_date  TEXT NOT NULL
-);
 
 -- ---------- Biopond production (Admin board + Operator module — single source of truth) ----------
 CREATE TABLE IF NOT EXISTS racks (
@@ -260,31 +234,4 @@ CREATE TABLE IF NOT EXISTS notification_settings (
 CREATE TABLE IF NOT EXISTS app_settings (
   key   TEXT PRIMARY KEY,
   value TEXT NOT NULL -- JSON blob
-);
-
--- ---------- Maggot cultivator community directory ----------
--- Public landing page shows name/address/kabupaten/provinsi + the province
--- distribution map only; phone is only ever returned by the authenticated
--- admin endpoints (see server/routes/communities.js vs communityPublic.js).
-CREATE TABLE IF NOT EXISTS communities (
-  id         TEXT PRIMARY KEY,
-  name       TEXT NOT NULL,
-  phone      TEXT,
-  address    TEXT,
-  kabupaten  TEXT,
-  provinsi   TEXT NOT NULL,
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
-);
-
--- ---------- Password reset tokens ----------
--- Only the SHA-256 hash of the token is stored — the raw token is emailed to
--- the user and never persisted, so a leaked database alone can't be used to
--- take over an account (see server/routes/auth.js).
-CREATE TABLE IF NOT EXISTS password_resets (
-  token_hash TEXT PRIMARY KEY,
-  user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  expires_at TEXT NOT NULL,
-  used       INTEGER NOT NULL DEFAULT 0,
-  created_at TEXT NOT NULL
 );

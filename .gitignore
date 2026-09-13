@@ -4,6 +4,8 @@ dist
 *.log
 server/data/*.sqlite3*
 server/data/backups/
+server/data/tenants/
 server/test/test.*.sqlite3*
+server/test/test.*.tenants/
 .env
 .env.local

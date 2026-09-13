@@ -2,10 +2,11 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, Layers, CalendarDays, Building2, Handshake, FileBarChart2,
-  Bell, Settings, ChevronLeft, Users,
+  Bell, Settings, ChevronLeft, Users, Lock,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useLanguage } from "../../context/LanguageContext.jsx";
+import { ROUTE_MODULES, isModuleLocked } from "../../data/planModules.js";
 
 const navItems = [
   { to: "/dashboard", key: "sidebar.dashboard", icon: LayoutDashboard, end: true },
@@ -25,6 +26,7 @@ const initials = (name = "") =>
 export default function Sidebar({ collapsed, onToggle }) {
   const { session } = useAuth();
   const { t } = useLanguage();
+  const plan = session?.organization?.plan;
 
   return (
     <aside className="db-sidebar">
@@ -43,18 +45,22 @@ export default function Sidebar({ collapsed, onToggle }) {
       </div>
 
       <nav className="db-nav">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.end}
-            className={({ isActive }) => `db-nav-item${isActive ? " active" : ""}`}
-            title={t(item.key)}
-          >
-            <item.icon size={19} />
-            <span>{t(item.key)}</span>
-          </NavLink>
-        ))}
+        {navItems.map((item) => {
+          const locked = isModuleLocked(ROUTE_MODULES[item.to], plan);
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) => `db-nav-item${isActive ? " active" : ""}${locked ? " locked" : ""}`}
+              title={locked ? t("plan.lockedTooltip") : t(item.key)}
+            >
+              <item.icon size={19} />
+              <span>{t(item.key)}</span>
+              {locked && <Lock size={13} className="lock-ic" />}
+            </NavLink>
+          );
+        })}
       </nav>
 
       <div className="db-sidebar-bottom">

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db, nowISO, nextId } from "../db.js";
+import { nowISO, nextId } from "../db.js";
 import { requireOperatorOrPermission } from "../middleware/auth.js";
 
 const router = Router();
@@ -7,7 +7,7 @@ const router = Router();
 function makeLogRoutes({ path, table, idPrefix, columns }) {
   // columns: array of { field, column } pairs describing the body shape (excluding id/createdBy/createdAt)
   router.get(`/${path}`, (req, res) => {
-    const rows = db.prepare(`SELECT * FROM ${table} ORDER BY created_at DESC`).all();
+    const rows = req.db.prepare(`SELECT * FROM ${table} ORDER BY created_at DESC`).all();
     res.json(rows.map((r) => rowToJson(r, columns)));
   });
 
@@ -20,14 +20,14 @@ function makeLogRoutes({ path, table, idPrefix, columns }) {
         return res.status(400).json({ error: `${field} is required.` });
       }
     }
-    const id = nextId(table, idPrefix, 4);
+    const id = nextId(req.db, table, idPrefix, 4);
     const ts = nowISO();
     const colNames = ["id", ...columns.map((c) => c.column), "created_by", "created_at"];
     const placeholders = colNames.map(() => "?").join(",");
     const values = [id, ...columns.map((c) => body[c.field]), body.createdBy || null, ts];
-    db.prepare(`INSERT INTO ${table} (${colNames.join(",")}) VALUES (${placeholders})`).run(...values);
+    req.db.prepare(`INSERT INTO ${table} (${colNames.join(",")}) VALUES (${placeholders})`).run(...values);
 
-    res.status(201).json(rowToJson(db.prepare(`SELECT * FROM ${table} WHERE id = ?`).get(id), columns));
+    res.status(201).json(rowToJson(req.db.prepare(`SELECT * FROM ${table} WHERE id = ?`).get(id), columns));
   });
 }
 

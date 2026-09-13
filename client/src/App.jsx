@@ -6,11 +6,13 @@ import { BiopondProvider } from "./context/BiopondContext.jsx";
 import { ProductionLogProvider } from "./context/ProductionLogContext.jsx";
 import Landing from "./pages/Landing.jsx";
 import LoginPage from "./pages/Login.jsx";
+import RegisterPage from "./pages/Register.jsx";
 import ForgotPasswordPage from "./pages/ForgotPassword.jsx";
 import ResetPasswordPage from "./pages/ResetPassword.jsx";
 
 // ---------- Admin (desktop panel) ----------
 import ProtectedRoute from "./admin/ProtectedRoute.jsx";
+import PlanGate from "./admin/PlanGate.jsx";
 import DashboardLayout from "./admin/components/DashboardLayout.jsx";
 import Dashboard from "./admin/pages/Dashboard.jsx";
 import Production from "./admin/pages/Production.jsx";
@@ -47,6 +49,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
 
@@ -60,14 +63,14 @@ export default function App() {
               >
                 <Route index element={<Dashboard />} />
                 <Route path="production" element={<Production />} />
-                <Route path="calendar" element={<CalendarPage />} />
-                <Route path="clients" element={<Clients />} />
-                <Route path="clients/:clientId" element={<ClientDetail />} />
-                <Route path="vendors" element={<Vendors />} />
-                <Route path="community" element={<Community />} />
-                <Route path="reports" element={<Reports />} />
-                <Route path="notifications" element={<Notifications />} />
-                <Route path="settings" element={<Settings />} />
+                <Route path="calendar" element={<PlanGate module="Calendar"><CalendarPage /></PlanGate>} />
+                <Route path="clients" element={<PlanGate module="Client"><Clients /></PlanGate>} />
+                <Route path="clients/:clientId" element={<PlanGate module="Client"><ClientDetail /></PlanGate>} />
+                <Route path="vendors" element={<PlanGate module="Vendor"><Vendors /></PlanGate>} />
+                <Route path="community" element={<PlanGate module="Community"><Community /></PlanGate>} />
+                <Route path="reports" element={<PlanGate module="Report"><Reports /></PlanGate>} />
+                <Route path="notifications" element={<PlanGate module="Notification"><Notifications /></PlanGate>} />
+                <Route path="settings" element={<PlanGate module="Setting"><Settings /></PlanGate>} />
               </Route>
 
               <Route

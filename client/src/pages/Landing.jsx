@@ -97,6 +97,12 @@ export default function Landing() {
     navigate("/login");
   };
 
+  const goToRegister = (e) => {
+    e.preventDefault();
+    setMobileOpen(false);
+    navigate("/register");
+  };
+
   const goToDashboard = (e) => {
     e.preventDefault();
     navigate("/dashboard");
@@ -447,7 +453,8 @@ export default function Landing() {
               </ul>
               <div className="nav-right">
                 <LanguageToggle />
-                <a href="/login" className="btn btn-primary" style={{ padding: "11px 22px" }} onClick={goToLogin}>{t("landing.nav.login")}</a>
+                <a href="/register" className="btn btn-outline nav-login" style={{ padding: "11px 22px" }} onClick={goToRegister}>{t("landing.nav.register")}</a>
+                <a href="/login" className="btn btn-primary nav-login" style={{ padding: "11px 22px" }} onClick={goToLogin}>{t("landing.nav.login")}</a>
                 <button className="burger" aria-label={t("landing.nav.openMenu")} onClick={() => setMobileOpen(true)}>
                   <Menu size={26} />
                 </button>
@@ -472,6 +479,7 @@ export default function Landing() {
             ))}
           </ul>
           <LanguageToggle style={{ marginBottom: 18 }} />
+          <a href="/register" className="btn btn-outline" style={{ marginBottom: 12 }} onClick={goToRegister}>{t("landing.nav.register")}</a>
           <a href="/login" className="btn btn-primary" onClick={goToLogin}>{t("landing.nav.login")}</a>
         </div>
 
@@ -846,7 +854,7 @@ export default function Landing() {
               <h2>{t("landing.cta.title")}</h2>
               <p>{t("landing.cta.desc")}</p>
               <div className="cta-btns">
-                <a href="/login" className="btn btn-primary" onClick={goToLogin}>{t("landing.cta.getStarted")}</a>
+                <a href="/register" className="btn btn-primary" onClick={goToRegister}>{t("landing.cta.getStarted")}</a>
                 <a href="#" className="btn btn-ghost-dark">{t("landing.cta.requestDemo")}</a>
               </div>
               <div className="cta-note">{t("landing.cta.note")}</div>

@@ -1,9 +1,12 @@
 import { Router } from "express";
-import { db, nextId } from "../db.js";
+import { nextId } from "../db.js";
 import { requirePermission } from "../middleware/auth.js";
+import { requirePlan } from "../middleware/plan.js";
 import { validateBody } from "../validate.js";
 
 const router = Router();
+// Client management is paid-only — see the multi-tenant plan's Phase 3.
+router.use(requirePlan("Client"));
 
 const hotelSchema = {
   name: { maxLength: 200 },
@@ -16,7 +19,7 @@ const hotelSchema = {
 // Vendor PIC is never stored on the hotel row — it's derived live from
 // whichever vendor's "Handles" list includes this hotel (see vendors.js),
 // so editing a vendor's PIC on the Vendor page instantly reflects here too.
-function getVendorForHotel(hotelId) {
+function getVendorForHotel(db, hotelId) {
   return db.prepare(
     `SELECT v.pic, v.pic_position, v.phone2
      FROM vendor_hotels vh JOIN vendors v ON v.id = vh.vendor_id
@@ -46,8 +49,8 @@ const toHotel = (h, vendor) => ({
 });
 
 router.get("/", (req, res) => {
-  const hotels = db.prepare("SELECT * FROM hotels ORDER BY rowid").all();
-  const vendorLinks = db.prepare(
+  const hotels = req.db.prepare("SELECT * FROM hotels ORDER BY rowid").all();
+  const vendorLinks = req.db.prepare(
     `SELECT vh.hotel_id AS hotel_id, v.pic, v.pic_position, v.phone2
      FROM vendor_hotels vh JOIN vendors v ON v.id = vh.vendor_id`
   ).all();
@@ -58,7 +61,7 @@ router.get("/", (req, res) => {
 });
 
 router.get("/:id/waste-history", (req, res) => {
-  const rows = db.prepare("SELECT * FROM waste_collections WHERE hotel_id = ? ORDER BY date").all(req.params.id);
+  const rows = req.db.prepare("SELECT * FROM waste_collections WHERE hotel_id = ? ORDER BY date").all(req.params.id);
   res.json(rows.map((w) => ({
     date: w.date, quantityKg: w.quantity_kg, category: w.category,
     vehicle: w.vehicle, driver: w.driver, operator: w.operator, notes: w.notes || "",
@@ -72,9 +75,9 @@ router.post(
   (req, res) => {
   const { name, address, phone, email, website, hotelPIC } = req.body || {};
 
-  const id = nextId("hotels", "HTL", 2);
+  const id = nextId(req.db, "hotels", "HTL", 2);
   const contractYear = new Date().getFullYear();
-  db.prepare(
+  req.db.prepare(
     `INSERT INTO hotels (id,name,address,phone,email,website,hotel_pic_name,hotel_pic_position,hotel_pic_phone,contract_number,contract_start,contract_expiry,status,monthly_waste_kg,avg_daily_waste_kg,last_collection)
      VALUES (?,?,?,?,?,?,?,?,?,?, date('now'), date('now','+1 year'), 'Active', 0, 0, NULL)`
   ).run(
@@ -83,15 +86,15 @@ router.post(
     `CTR-${contractYear}-${100 + Number(id.slice(4))}`
   );
 
-  res.status(201).json(toHotel(db.prepare("SELECT * FROM hotels WHERE id = ?").get(id), getVendorForHotel(id)));
+  res.status(201).json(toHotel(req.db.prepare("SELECT * FROM hotels WHERE id = ?").get(id), getVendorForHotel(req.db, id)));
 });
 
 router.patch("/:id", requirePermission("Client", "edit"), validateBody(hotelSchema), (req, res) => {
-  const existing = db.prepare("SELECT * FROM hotels WHERE id = ?").get(req.params.id);
+  const existing = req.db.prepare("SELECT * FROM hotels WHERE id = ?").get(req.params.id);
   if (!existing) return res.status(404).json({ error: "Hotel not found." });
 
   const b = req.body || {};
-  db.prepare(
+  req.db.prepare(
     `UPDATE hotels SET name=?, address=?, phone=?, email=?, website=?, status=?,
      hotel_pic_name=?, hotel_pic_position=?, hotel_pic_phone=? WHERE id=?`
   ).run(
@@ -100,11 +103,11 @@ router.patch("/:id", requirePermission("Client", "edit"), validateBody(hotelSche
     b.hotelPIC?.name ?? existing.hotel_pic_name, b.hotelPIC?.position ?? existing.hotel_pic_position,
     b.hotelPIC?.phone ?? existing.hotel_pic_phone, req.params.id
   );
-  res.json(toHotel(db.prepare("SELECT * FROM hotels WHERE id = ?").get(req.params.id), getVendorForHotel(req.params.id)));
+  res.json(toHotel(req.db.prepare("SELECT * FROM hotels WHERE id = ?").get(req.params.id), getVendorForHotel(req.db, req.params.id)));
 });
 
 router.delete("/:id", requirePermission("Client", "delete"), (req, res) => {
-  const result = db.prepare("DELETE FROM hotels WHERE id = ?").run(req.params.id);
+  const result = req.db.prepare("DELETE FROM hotels WHERE id = ?").run(req.params.id);
   if (result.changes === 0) return res.status(404).json({ error: "Hotel not found." });
   res.status(204).end();
 });

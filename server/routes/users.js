@@ -3,15 +3,33 @@ import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
 import { db, nowISO } from "../db.js";
 import { requireRole } from "../middleware/auth.js";
+import { requirePlan } from "../middleware/plan.js";
 import { validateBody, validate } from "../validate.js";
 import { issueResetToken, resolveAppUrl } from "../passwordReset.js";
 import { sendWelcomeEmail } from "../email.js";
+import { DEMO_ORG_ID } from "../seed.js";
 
 const router = Router();
+// Team/role management lives on the Settings page, which is paid-only — see
+// the multi-tenant plan's Phase 3. A free org stays single-user.
+router.use(requirePlan("Setting"));
 
 // User accounts and role permissions are the highest-blast-radius data in the
 // app (they control who can do what) — restrict mutations to Super Admin only.
 const requireSuperAdmin = requireRole("role-super-admin");
+
+// role_permissions has no org_id (it's a shared template across every
+// tenant for now — see the multi-tenant plan's scope cut), so letting any
+// org's Super Admin edit it would let one company silently change every
+// other company's permission matrix. Only the platform operator's own
+// organization (the original demo org) may edit the shared template; every
+// org can still read it (GET /roles/all is unrestricted).
+function requirePlatformOwner(req, res, next) {
+  if (req.auth?.orgId !== DEMO_ORG_ID) {
+    return res.status(403).json({ error: "Only the platform operator can edit the shared role template." });
+  }
+  next();
+}
 
 const toUser = (u) => ({
   id: u.id, name: u.name, email: u.email, roleId: u.role_id,
@@ -27,7 +45,7 @@ const userSchema = {
 };
 
 router.get("/", (req, res) => {
-  res.json(db.prepare("SELECT * FROM users ORDER BY rowid").all().map(toUser));
+  res.json(db.prepare("SELECT * FROM users WHERE org_id = ? ORDER BY rowid").all(req.auth.orgId).map(toUser));
 });
 
 function nextUserId() {
@@ -41,12 +59,12 @@ function nextUserId() {
 // user a link (the same reset-password page "forgot password" uses) to set
 // their own — no temp password ever passes through an admin's screen, an
 // alert() dialog, or this response.
-async function createUserAndSendWelcome({ name, email, roleId, status }, req) {
+async function createUserAndSendWelcome({ orgId, name, email, roleId, status }, req) {
   const id = nextUserId();
   const unusablePassword = bcrypt.hashSync(crypto.randomBytes(32).toString("hex"), 10);
   db.prepare(
-    "INSERT INTO users (id, name, email, password, role_id, status, last_login, created_date) VALUES (?,?,?,?,?,?,NULL,?)"
-  ).run(id, name, email, unusablePassword, roleId, status || "Active", nowISO().slice(0, 10));
+    "INSERT INTO users (id, org_id, name, email, password, role_id, status, last_login, created_date) VALUES (?,?,?,?,?,?,?,NULL,?)"
+  ).run(id, orgId, name, email, unusablePassword, roleId, status || "Active", nowISO().slice(0, 10));
 
   const rawToken = issueResetToken(id);
   const setupUrl = `${resolveAppUrl(req)}/reset-password?token=${rawToken}`;
@@ -66,10 +84,14 @@ router.post(
   validateBody({ ...userSchema, name: { ...userSchema.name, required: true }, email: { ...userSchema.email, required: true }, roleId: { ...userSchema.roleId, required: true } }),
   async (req, res) => {
     const { name, email, roleId, status } = req.body || {};
+    // Email is unique across the whole platform, not just this org (one
+    // email = one account, see the multi-tenant plan) — the UNIQUE
+    // constraint would catch this too, but checking first gives a clean
+    // 409 instead of a raw constraint-violation error.
     const dup = db.prepare("SELECT id FROM users WHERE lower(email) = lower(?)").get(email.trim());
     if (dup) return res.status(409).json({ error: "A user with this email already exists." });
 
-    const id = await createUserAndSendWelcome({ name, email: email.trim(), roleId, status }, req);
+    const id = await createUserAndSendWelcome({ orgId: req.auth.orgId, name, email: email.trim(), roleId, status }, req);
     res.status(201).json(toUser(db.prepare("SELECT * FROM users WHERE id = ?").get(id)));
   }
 );
@@ -103,7 +125,7 @@ router.post("/bulk", requireSuperAdmin, async (req, res) => {
     if (!db.prepare("SELECT id FROM roles WHERE id = ?").get(roleId)) { skipped.push({ row: i + 1, reason: `Unknown role "${roleId}".` }); continue; }
 
     seenEmails.add(email.toLowerCase());
-    const id = await createUserAndSendWelcome({ name, email, roleId, status: (r.status || "Active").toString().trim() }, req);
+    const id = await createUserAndSendWelcome({ orgId: req.auth.orgId, name, email, roleId, status: (r.status || "Active").toString().trim() }, req);
     inserted.push(id);
   }
 
@@ -114,7 +136,7 @@ router.post("/bulk", requireSuperAdmin, async (req, res) => {
 // replaces the old flow where the admin generated a temp password in the
 // browser and read it back via alert().
 router.post("/:id/send-password-reset", requireSuperAdmin, async (req, res) => {
-  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(req.params.id);
+  const user = db.prepare("SELECT * FROM users WHERE id = ? AND org_id = ?").get(req.params.id, req.auth.orgId);
   if (!user) return res.status(404).json({ error: "User not found." });
 
   const rawToken = issueResetToken(user.id);
@@ -124,7 +146,7 @@ router.post("/:id/send-password-reset", requireSuperAdmin, async (req, res) => {
 });
 
 router.patch("/:id", requireSuperAdmin, validateBody(userSchema), (req, res) => {
-  const existing = db.prepare("SELECT * FROM users WHERE id = ?").get(req.params.id);
+  const existing = db.prepare("SELECT * FROM users WHERE id = ? AND org_id = ?").get(req.params.id, req.auth.orgId);
   if (!existing) return res.status(404).json({ error: "User not found." });
 
   const b = req.body || {};
@@ -137,11 +159,12 @@ router.patch("/:id", requireSuperAdmin, validateBody(userSchema), (req, res) => 
 });
 
 router.delete("/:id", requireSuperAdmin, (req, res) => {
-  const result = db.prepare("DELETE FROM users WHERE id = ?").run(req.params.id);
+  const result = db.prepare("DELETE FROM users WHERE id = ? AND org_id = ?").run(req.params.id, req.auth.orgId);
   if (result.changes === 0) return res.status(404).json({ error: "User not found." });
   res.status(204).end();
 });
 
+// Shared global template across every org for now — see requirePlatformOwner.
 router.get("/roles/all", (req, res) => {
   const roles = db.prepare("SELECT * FROM roles ORDER BY rowid").all();
   const perms = db.prepare("SELECT * FROM role_permissions").all();
@@ -161,7 +184,7 @@ router.get("/roles/all", (req, res) => {
   );
 });
 
-router.patch("/roles/:roleId/permissions", requireSuperAdmin, (req, res) => {
+router.patch("/roles/:roleId/permissions", requireSuperAdmin, requirePlatformOwner, (req, res) => {
   const { module, action, value } = req.body || {};
   const validActions = ["view", "create", "edit", "delete", "export", "approve"];
   if (!module || !validActions.includes(action)) {

@@ -56,6 +56,13 @@ export function AuthProvider({ children }) {
     return nextSession;
   };
 
+  const register = async ({ companyName, name, email, password }) => {
+    const nextSession = await api.post("/auth/register", { companyName, name, email, password });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextSession));
+    setSession(nextSession);
+    return nextSession;
+  };
+
   const logout = async () => {
     localStorage.removeItem(STORAGE_KEY);
     setSession(null);
@@ -67,7 +74,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ session, login, logout, isAuthenticated: !!session, checking }}>
+    <AuthContext.Provider value={{ session, login, register, logout, isAuthenticated: !!session, checking }}>
       {children}
     </AuthContext.Provider>
   );
