@@ -36,6 +36,10 @@ if (process.env.NODE_ENV === "production" && !process.env.DB_PATH) {
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 
 export const db = new DatabaseSync(DB_PATH);
+// WAL mode lets readers and writers run concurrently instead of blocking each
+// other (the default rollback-journal mode serializes them) — matters once
+// more than a couple of the ~100 users are hitting the API at once.
+db.exec("PRAGMA journal_mode = WAL;");
 db.exec(fs.readFileSync(SCHEMA_PATH, "utf-8"));
 
 // Lightweight migrations: `CREATE TABLE IF NOT EXISTS` above only affects brand

@@ -86,18 +86,56 @@ sekarang paket npm yang berdiri sendiri):
 | Variabel | File | Default |
 |---|---|---|
 | `PORT` | `server/.env` | `4000` |
-| `CORS_ORIGIN` | `server/.env` | mengizinkan semua origin |
-| `DB_PATH` | `server/.env` | `server/data/bsfdm.sqlite3` |
-| `JWT_SECRET` | `server/.env` | secret acak per-proses (**wajib diisi tetap sebelum go-live**, lihat di bawah) |
+| `CORS_ORIGIN` | `server/.env` | tidak perlu diisi untuk deploy single-host (lihat catatan di bawah); **wajib** diisi kalau frontend & backend di-deploy terpisah — server *refuse to start* di production tanpa ini pada kasus itu |
+| `DB_PATH` | `server/.env` | `server/data/bsfdm.sqlite3` — **wajib diarahkan ke volume persisten** di Render/Railway/Fly.io/Heroku (server *refuse to start* kalau terdeteksi platform itu tanpa `DB_PATH`) |
+| `BACKUP_DIR` | `server/.env` | folder `backups/` di sebelah database — pastikan juga di volume persisten |
+| `BACKUP_RETENTION_COUNT` | `server/.env` | `14` (jumlah backup harian yang disimpan) |
+| `JWT_SECRET` | `server/.env` | **wajib diisi tetap sebelum go-live** — server *refuse to start* di production tanpa ini |
 | `COOKIE_SAME_SITE` | `server/.env` | `lax` (isi `none` hanya jika frontend & backend beda domain) |
+| `APP_URL` | `server/.env` | URL frontend, dipakai untuk link di email reset password. Default `http://localhost:5173` (dev) atau origin request itu sendiri (deploy single-host) — **wajib diisi** kalau frontend & backend beda domain |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` | `server/.env` | kosong — tanpa ini, link reset password cuma tercatat di log server, tidak benar-benar terkirim |
 | `VITE_API_BASE` | `client/.env` | `/api` (relatif, otomatis benar untuk mode single-host) |
 
 **Penting — penyimpanan database di hosting dengan filesystem sementara**
 (Render, Railway, Fly.io, dsb.): disk lokal container biasanya di-reset setiap
 deploy/restart. Pasang *persistent volume/disk* di platform tersebut, lalu
-arahkan `DB_PATH` ke path di dalam volume itu (mis. `/data/bsfdm.sqlite3`) agar
-data tidak hilang setiap deploy. Untuk VPS biasa (disk permanen), `DB_PATH`
-default sudah aman dipakai.
+arahkan `DB_PATH` (dan `BACKUP_DIR`) ke path di dalam volume itu (mis.
+`/data/bsfdm.sqlite3`) agar data tidak hilang setiap deploy. Untuk VPS biasa
+(disk permanen), `DB_PATH` default sudah aman dipakai.
+
+### Contoh langkah deploy ke Render
+
+1. Push repo ini ke GitHub/GitLab (Render deploy dari situ).
+2. Di Render: **New → Web Service**, hubungkan repo ini.
+   - Build Command: `npm install && npm run build`
+   - Start Command: `npm run start`
+   - Environment: Node
+3. **New → Disk**, attach ke service ini, mount path mis. `/data` (mulai dari 1GB sudah lebih dari cukup).
+4. Di tab Environment service tersebut, tambahkan:
+   - `JWT_SECRET` — generate dengan `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`
+   - `DB_PATH=/data/bsfdm.sqlite3`
+   - `BACKUP_DIR=/data/backups`
+   - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` (lihat panduan Gmail/Google Workspace di bawah)
+   - `NODE_ENV=production` (biasanya sudah otomatis di Render)
+5. Deploy. Render kasih domain `*.onrender.com` otomatis dengan HTTPS — bisa dipakai langsung, atau hubungkan domain sendiri lewat tab Settings → Custom Domain.
+6. Setelah deploy pertama sukses, cek log service: harus ada baris `[db] Empty database — seeding demo data...` (database baru, otomatis terisi data contoh + akun demo di atas). Segera ganti password akun `admin@bsfdm.com` atau buat user Super Admin baru lalu nonaktifkan/hapus akun demo.
+7. Railway dan Fly.io langkahnya serupa (attach volume, set env vars yang sama) — beda di detail UI saja.
+
+### Mengirim email sungguhan lewat Gmail / Google Workspace
+
+Google **menolak** SMTP dengan password akun biasa — wajib pakai *App Password* (butuh 2-Step Verification aktif di akun tersebut):
+
+1. Aktifkan 2-Step Verification di akun Google yang mau dipakai kirim email (myaccount.google.com/security).
+2. Buka myaccount.google.com/apppasswords, buat App Password baru (nama bebas, mis. "BSFDM SMTP").
+3. Isi di `server/.env` (atau env var hosting):
+   ```
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_USER=nama@perusahaan-anda.com
+   SMTP_PASS=<App Password 16 karakter, bukan password akun>
+   SMTP_FROM=BSFDM <nama@perusahaan-anda.com>
+   ```
+4. Restart server, lalu tes: buka `/forgot-password` di aplikasi, masukkan email salah satu user — kalau email masuk, konfigurasi sudah benar.
 
 ### Kalau frontend & backend di-deploy terpisah (dua host berbeda)
 
