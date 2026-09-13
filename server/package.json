@@ -1,0 +1,22 @@
+{
+  "name": "bsfdm-server",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env index.js",
+    "start": "NODE_ENV=production node --disable-warning=ExperimentalWarning --env-file-if-exists=.env index.js",
+    "backup": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env backup.js",
+    "test": "node --disable-warning=ExperimentalWarning --import ./test/setup.js --test test/*.test.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "nodemailer": "^10.0.9"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "bsfdm-project",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w client",
+    "server": "npm run dev -w server",
+    "dev:full": "concurrently -n web,api -c blue,green \"npm:dev\" \"npm:server\"",
+    "build": "npm run build -w client",
+    "start": "npm run start -w server",
+    "preview": "npm run preview -w client"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}

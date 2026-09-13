@@ -1,0 +1,15 @@
+/* Global reset — applies to every page (Landing, Login, admin, operator).
+   Browsers default <body> to an 8px margin, which without this shows up as a
+   visible gap around the entire app on every device. */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+#root {
+  min-height: 100vh;
+}
