@@ -1,0 +1,41 @@
+# Render "Blueprint" — lets Render create the web service + persistent disk
+# automatically from this file (Dashboard → New → Blueprint → pick this repo)
+# instead of clicking through every setting by hand. Vars marked `sync: false`
+# are secrets: Render will prompt for them once during setup and store them
+# securely — they are never written to this file or the git history.
+#
+# See README.md's "Contoh langkah deploy ke Render" for the full walkthrough
+# (including how to generate JWT_SECRET and the Gmail/Google Workspace SMTP
+# App Password).
+services:
+  - type: web
+    name: bsfdm
+    runtime: node
+    plan: starter
+    branch: main
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_PATH
+        value: /data/bsfdm.sqlite3
+      - key: BACKUP_DIR
+        value: /data/backups
+      - key: JWT_SECRET
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+    disk:
+      name: bsfdm-data
+      mountPath: /data
+      sizeGB: 1
