@@ -151,12 +151,19 @@ export function seedTenantDemoData(db) {
   notificationTypes.forEach((n) => insertNotif.run(n.id, n.label, n.inApp ? 1 : 0, n.email ? 1 : 0, n.whatsapp ? 1 : 0, n.timing));
 }
 
-// Backfills any (role, module) permission rows that don't exist yet on an
-// already-seeded control database — e.g. after a new module (Vendor,
-// Employee, Community) is added to rolePermissions in dummyData.js. Safe to
+// Backfills any role or (role, module) permission row that doesn't exist yet
+// on an already-seeded control database — e.g. after a new role (Owner) or a
+// new module (Vendor, Employee, Community) is added in dummyData.js. Safe to
 // call on every boot: existing rows are left untouched, only gaps are filled in.
 export function migrateRolePermissions(db) {
-  const existing = new Set(
+  const existingRoles = new Set(db.prepare("SELECT id FROM roles").all().map((r) => r.id));
+  const insertRole = db.prepare("INSERT INTO roles (id, name, description) VALUES (?, ?, ?)");
+  roles.forEach((r) => {
+    if (existingRoles.has(r.id)) return;
+    insertRole.run(r.id, r.name, r.description);
+  });
+
+  const existingPerms = new Set(
     db.prepare("SELECT role_id || ':' || module AS k FROM role_permissions").all().map((r) => r.k)
   );
   const insertPerm = db.prepare(
@@ -164,7 +171,7 @@ export function migrateRolePermissions(db) {
   );
   Object.entries(rolePermissions).forEach(([roleId, modules]) => {
     Object.entries(modules).forEach(([mod, perms]) => {
-      if (existing.has(`${roleId}:${mod}`)) return;
+      if (existingPerms.has(`${roleId}:${mod}`)) return;
       insertPerm.run(roleId, mod, perms.view ? 1 : 0, perms.create ? 1 : 0, perms.edit ? 1 : 0, perms.delete ? 1 : 0, perms.export ? 1 : 0, perms.approve ? 1 : 0);
     });
   });

@@ -14,8 +14,10 @@ const router = Router();
 router.use(requirePlan("Setting"));
 
 // User accounts and role permissions are the highest-blast-radius data in the
-// app (they control who can do what) — restrict mutations to Super Admin only.
-const requireSuperAdmin = requireRole("role-super-admin");
+// app (they control who can do what) — restrict mutations to the two
+// highest-standing roles, Owner and Super Admin (equal standing — see
+// client/src/data/dummyData.js's roles list).
+const requireOwnerOrSuperAdmin = requireRole("role-owner", "role-super-admin");
 
 // role_permissions has no org_id (it's a shared template across every
 // tenant for now — see the multi-tenant plan's scope cut), so letting any
@@ -73,7 +75,7 @@ async function createUserAndSendWelcome({ orgId, name, email, roleId, status }, 
 
 router.post(
   "/",
-  requireSuperAdmin,
+  requireOwnerOrSuperAdmin,
   validateBody({ ...userSchema, name: { ...userSchema.name, required: true }, email: { ...userSchema.email, required: true }, roleId: { ...userSchema.roleId, required: true } }),
   async (req, res) => {
     const { name, email, roleId, status } = req.body || {};
@@ -91,7 +93,7 @@ router.post(
 
 // Bulk import — mirrors communities.js's /bulk: the client parses the
 // uploaded Excel file itself and posts the resulting rows as plain JSON.
-router.post("/bulk", requireSuperAdmin, async (req, res) => {
+router.post("/bulk", requireOwnerOrSuperAdmin, async (req, res) => {
   const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
   if (rows.length === 0) return res.status(400).json({ error: "No rows to import." });
 
@@ -128,7 +130,7 @@ router.post("/bulk", requireSuperAdmin, async (req, res) => {
 // Admin-triggered "set/reset your password" email for an existing user —
 // replaces the old flow where the admin generated a temp password in the
 // browser and read it back via alert().
-router.post("/:id/send-password-reset", requireSuperAdmin, async (req, res) => {
+router.post("/:id/send-password-reset", requireOwnerOrSuperAdmin, async (req, res) => {
   const user = db.prepare("SELECT * FROM users WHERE id = ? AND org_id = ?").get(req.params.id, req.auth.orgId);
   if (!user) return res.status(404).json({ error: "User not found." });
 
@@ -138,7 +140,7 @@ router.post("/:id/send-password-reset", requireSuperAdmin, async (req, res) => {
   res.json({ message: `A password setup link has been sent to ${user.email}.` });
 });
 
-router.patch("/:id", requireSuperAdmin, validateBody(userSchema), (req, res) => {
+router.patch("/:id", requireOwnerOrSuperAdmin, validateBody(userSchema), (req, res) => {
   const existing = db.prepare("SELECT * FROM users WHERE id = ? AND org_id = ?").get(req.params.id, req.auth.orgId);
   if (!existing) return res.status(404).json({ error: "User not found." });
 
@@ -151,7 +153,7 @@ router.patch("/:id", requireSuperAdmin, validateBody(userSchema), (req, res) => 
   res.json(toUser(db.prepare("SELECT * FROM users WHERE id = ?").get(req.params.id)));
 });
 
-router.delete("/:id", requireSuperAdmin, (req, res) => {
+router.delete("/:id", requireOwnerOrSuperAdmin, (req, res) => {
   const result = db.prepare("DELETE FROM users WHERE id = ? AND org_id = ?").run(req.params.id, req.auth.orgId);
   if (result.changes === 0) return res.status(404).json({ error: "User not found." });
   res.status(204).end();
@@ -177,7 +179,7 @@ router.get("/roles/all", (req, res) => {
   );
 });
 
-router.patch("/roles/:roleId/permissions", requireSuperAdmin, requirePlatformOwner, (req, res) => {
+router.patch("/roles/:roleId/permissions", requireOwnerOrSuperAdmin, requirePlatformOwner, (req, res) => {
   const { module, action, value } = req.body || {};
   const validActions = ["view", "create", "edit", "delete", "export", "approve"];
   if (!module || !validActions.includes(action)) {

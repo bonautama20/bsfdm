@@ -288,6 +288,7 @@ export const attendanceStats = {
 
 // ---------- Users & RBAC ----------
 export const roles = [
+  { id: "role-owner", name: "Owner", description: "Full system access — same standing as Super Admin." },
   { id: "role-super-admin", name: "Super Admin", description: "Full system access." },
   { id: "role-production-manager", name: "Production Manager", description: "Dashboard, Production, Calendar, Reports." },
   { id: "role-production-staff", name: "Production Staff", description: "Production, Calendar, limited Dashboard." },
@@ -312,6 +313,7 @@ const buildMatrix = (fullAccess, readOnlyModules = [], hiddenModules = []) =>
   }, {});
 
 export const rolePermissions = {
+  "role-owner": buildMatrix(true),
   "role-super-admin": buildMatrix(true),
   "role-production-manager": buildMatrix(true, [], []),
   // fullAccess=true here (was `false`, which — since Production/Calendar
