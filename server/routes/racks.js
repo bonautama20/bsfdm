@@ -1,8 +1,26 @@
 import { Router } from "express";
 import { nowISO } from "../db.js";
 import { requirePermission, requireOperatorOrPermission } from "../middleware/auth.js";
+import { getOrgPlan, FREE_BIOPOND_LIMIT } from "../middleware/plan.js";
 
 const router = Router();
+
+// A free org can use Production, but not build it out without limit — caps
+// total bioponds at FREE_BIOPOND_LIMIT (see the multi-tenant plan's Phase 3).
+// `additional` is how many new bioponds this request would add (1 for the
+// single-biopond route, N for creating a rack with N up front). Returns an
+// error payload to send as a 402, or null if the request is within quota.
+function checkBiopondQuota(req, additional) {
+  if (getOrgPlan(req.auth.orgId) !== "free") return null;
+  const { count } = req.db.prepare("SELECT COUNT(*) AS count FROM bioponds").get();
+  if (count + additional <= FREE_BIOPOND_LIMIT) return null;
+  return {
+    error: `Free plan is limited to ${FREE_BIOPOND_LIMIT} bioponds total. Upgrade to add more.`,
+    upgradeRequired: true,
+    limitReached: true,
+    limit: FREE_BIOPOND_LIMIT,
+  };
+}
 
 const toBiopond = (b) => ({
   id: b.id,
@@ -36,6 +54,9 @@ router.post("/", requirePermission("Production", "create"), (req, res) => {
   const { name, count } = req.body || {};
   if (!name || !count || Number(count) < 1) return res.status(400).json({ error: "Rack name and a positive biopond count are required." });
 
+  const quotaError = checkBiopondQuota(req, Number(count));
+  if (quotaError) return res.status(402).json(quotaError);
+
   const id = `RAK-${Date.now()}`;
   const ts = nowISO();
   req.db.prepare("INSERT INTO racks (id, name, created_at, updated_at) VALUES (?,?,?,?)").run(id, name, ts, ts);
@@ -68,6 +89,9 @@ router.post("/:rackId/bioponds", requirePermission("Production", "create"), (req
   const { rackId } = req.params;
   const rack = req.db.prepare("SELECT * FROM racks WHERE id = ?").get(rackId);
   if (!rack) return res.status(404).json({ error: "Rack not found." });
+
+  const quotaError = checkBiopondQuota(req, 1);
+  if (quotaError) return res.status(402).json(quotaError);
 
   const { max } = req.db.prepare("SELECT MAX(number) AS max FROM bioponds WHERE rack_id = ?").get(rackId);
   const nextNumber = (max || 0) + 1;

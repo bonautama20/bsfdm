@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Plus, Search, Pencil, Trash2, Boxes, CheckCircle2, AlertOctagon, Percent } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Plus, Search, Pencil, Trash2, Boxes, CheckCircle2, AlertOctagon, Percent, Lock } from "lucide-react";
 import Modal from "../../components/ui/Modal.jsx";
 import ConfirmDialog from "../../components/ui/ConfirmDialog.jsx";
 import Badge from "../../components/ui/Badge.jsx";
@@ -22,7 +23,21 @@ export default function BiopondBoard() {
   } = useBiopond();
   const { session } = useAuth();
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [hotels, setHotels] = useState([]);
+  const [quotaLimit, setQuotaLimit] = useState(null); // number when the upgrade prompt should be open, else null
+
+  // Shared by both "add rack" and "add biopond" failure paths — a free org
+  // hitting server/middleware/plan.js's FREE_BIOPOND_LIMIT gets an upgrade
+  // prompt (with the real limit from the server's response) instead of a raw
+  // error alert; anything else still falls back to alert() like before.
+  const handleBiopondError = (err, fallbackKey) => {
+    if (err.limitReached) {
+      setQuotaLimit(err.limit);
+    } else {
+      alert(err.message || t(fallbackKey));
+    }
+  };
 
   useEffect(() => {
     api.get("/hotels").then(setHotels).catch(() => {});
@@ -65,7 +80,7 @@ export default function BiopondBoard() {
     try {
       await addRack(lineForm.name.trim() || `Rak ${racks.length + 1}`, Math.max(1, Number(lineForm.count) || 1));
     } catch (err) {
-      alert(err.message || t("biopond.failedAddRack"));
+      handleBiopondError(err, "biopond.failedAddRack");
     }
   };
 
@@ -202,7 +217,7 @@ export default function BiopondBoard() {
             <div className="actions">
               <button className="biopond-rack-icon-btn" title={t("biopond.renameRack")} onClick={() => { setRenameTarget(rack.id); setRenameValue(rack.name); }}><Pencil size={13} /></button>
               <button className="biopond-rack-icon-btn" title={t("biopond.deleteRack")} onClick={() => setDeleteRackId(rack.id)}><Trash2 size={13} /></button>
-              <button className="db-btn db-btn-sm" onClick={() => addBiopondToRack(rack.id).catch((err) => alert(err.message || t("biopond.failedAddBiopond")))}><Plus size={13} /> {t("biopond.addBiopond")}</button>
+              <button className="db-btn db-btn-sm" onClick={() => addBiopondToRack(rack.id).catch((err) => handleBiopondError(err, "biopond.failedAddBiopond"))}><Plus size={13} /> {t("biopond.addBiopond")}</button>
             </div>
           </div>
 
@@ -332,6 +347,19 @@ export default function BiopondBoard() {
         title={t("biopond.deleteBiopondTitle", { number: deleteBiopondCandidate?.number ?? "" })}
         message={deleteBiopondCandidate?.status === "Occupied" ? t("biopond.deleteOccupiedMessage") : t("biopond.deleteAvailableMessage")}
       />
+
+      <Modal open={quotaLimit != null} onClose={() => setQuotaLimit(null)} title={t("biopond.limitReachedTitle")}
+        footer={
+          <button className="db-btn db-btn-primary" onClick={() => navigate("/dashboard/upgrade")}>{t("plan.viewUpgradeOptions")}</button>
+        }
+      >
+        <div style={{ textAlign: "center", padding: "12px 0" }}>
+          <div style={{ width: 48, height: 48, borderRadius: "50%", background: "var(--db-canvas)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", color: "var(--db-accent)" }}>
+            <Lock size={22} />
+          </div>
+          <p style={{ color: "var(--db-muted)", fontSize: ".9rem", lineHeight: 1.6 }}>{t("biopond.limitReachedDesc", { limit: quotaLimit })}</p>
+        </div>
+      </Modal>
     </div>
   );
 }

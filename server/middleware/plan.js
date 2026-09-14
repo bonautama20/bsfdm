@@ -9,6 +9,16 @@ import { db } from "../db.js";
 // that copy is a UX nicety, this one is the real boundary.
 const FREE_MODULES = new Set(["Production"]);
 
+// Even within Production (free), a free org is capped at this many bioponds
+// total — see server/routes/racks.js. The frontend doesn't hardcode this; it
+// reads the real limit back from this error response (err.limit) to show in
+// the upgrade prompt, so there's nothing else to keep in sync.
+export const FREE_BIOPOND_LIMIT = 5;
+
+export function getOrgPlan(orgId) {
+  return db.prepare("SELECT plan FROM organizations WHERE id = ?").get(orgId)?.plan || "free";
+}
+
 // Use exactly like requirePermission — after requireAuth, before the route
 // handler. `module` is the same string requirePermission already uses for
 // that route (Client, Vendor, Employee, Report, Calendar, Notification,
@@ -17,9 +27,7 @@ export function requirePlan(module) {
   return (req, res, next) => {
     if (!req.auth?.orgId) return res.status(401).json({ error: "Not authenticated." });
     if (FREE_MODULES.has(module)) return next();
-
-    const org = db.prepare("SELECT plan FROM organizations WHERE id = ?").get(req.auth.orgId);
-    if (org?.plan === "paid") return next();
+    if (getOrgPlan(req.auth.orgId) === "paid") return next();
 
     res.status(402).json({
       error: `Upgrade to a paid plan to access ${module}.`,

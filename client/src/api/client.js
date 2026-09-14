@@ -16,13 +16,20 @@ async function request(path, options = {}) {
 
   if (!res.ok) {
     let message = `Request failed (${res.status})`;
+    let data = null;
     try {
-      const data = await res.json();
+      data = await res.json();
       if (data?.error) message = data.error;
     } catch {
       // response had no JSON body
     }
-    throw new Error(message);
+    const err = new Error(message);
+    err.status = res.status;
+    // Lets callers branch on structured fields a route attached to its error
+    // response (e.g. plan.js's { upgradeRequired, limitReached }) without
+    // string-matching the message.
+    Object.assign(err, data || {});
+    throw err;
   }
 
   if (res.status === 204) return null;
