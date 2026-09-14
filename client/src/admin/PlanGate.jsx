@@ -1,5 +1,6 @@
 import React from "react";
 import { Lock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useLanguage } from "../context/LanguageContext.jsx";
 import { isModuleLocked } from "../data/planModules.js";
@@ -15,6 +16,7 @@ import { isModuleLocked } from "../data/planModules.js";
 export default function PlanGate({ module, children }) {
   const { session } = useAuth();
   const { t } = useLanguage();
+  const navigate = useNavigate();
 
   if (!isModuleLocked(module, session?.organization?.plan)) return children;
 
@@ -24,7 +26,8 @@ export default function PlanGate({ module, children }) {
         <Lock size={24} />
       </div>
       <h3 style={{ fontSize: "1.15rem", marginBottom: 8 }}>{t("plan.upgradeTitle")}</h3>
-      <p style={{ color: "var(--db-muted)", fontSize: ".9rem", lineHeight: 1.6 }}>{t("plan.upgradeDesc")}</p>
+      <p style={{ color: "var(--db-muted)", fontSize: ".9rem", lineHeight: 1.6, marginBottom: 20 }}>{t("plan.upgradeDesc")}</p>
+      <button className="db-btn db-btn-primary" onClick={() => navigate("/dashboard/upgrade")}>{t("plan.viewUpgradeOptions")}</button>
     </div>
   );
 }

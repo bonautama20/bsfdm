@@ -66,6 +66,9 @@
 .db-nav-item.locked{ color:rgba(255,255,255,.4); }
 .db-nav-item.locked .lock-ic{ margin-left:auto; flex-shrink:0; opacity:.8; }
 .db-nav-item.locked.active{ background:rgba(227,107,20,.35); color:#fff; }
+.db-nav-item.upgrade-cta{ margin-top:6px; color:var(--db-accent); border:1.5px dashed rgba(227,107,20,.5); }
+.db-nav-item.upgrade-cta:hover{ background:rgba(227,107,20,.12); color:var(--db-accent); }
+.db-nav-item.upgrade-cta.active{ background:var(--db-accent); border-color:var(--db-accent); color:#fff; }
 .db-shell.collapsed .db-nav-item span{ display:none; }
 .db-shell.collapsed .db-nav-item .lock-ic{ display:none; }
 .db-shell.collapsed .db-nav-item{ justify-content:center; }

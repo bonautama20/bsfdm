@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import crypto from "node:crypto";
-import { db } from "../db.js";
+import { db, PLATFORM_OWNER_ORG_ID } from "../db.js";
 import { getTenantDb } from "../tenantDb.js";
 
 const isProd = process.env.NODE_ENV === "production";
@@ -91,6 +91,19 @@ export function requireRole(...roleIds) {
     }
     next();
   };
+}
+
+// Restricts an endpoint to the single organization designated as the
+// platform operator (PLATFORM_OWNER_ORG_ID in db.js) — used for the shared
+// role/permission template (editable by nobody else, since it's global
+// across every tenant for now) and for reviewing other orgs' upgrade
+// requests (routes/billing.js). Not a role check: this is about which
+// ORGANIZATION you belong to, regardless of your role within it.
+export function requirePlatformOwner(req, res, next) {
+  if (req.auth?.orgId !== PLATFORM_OWNER_ORG_ID) {
+    return res.status(403).json({ error: "Only the platform operator can do this." });
+  }
+  next();
 }
 
 const VALID_ACTIONS = ["view", "create", "edit", "delete", "export", "approve"];

@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, Layers, CalendarDays, Building2, Handshake, FileBarChart2,
-  Bell, Settings, ChevronLeft, Users, Lock,
+  Bell, Settings, ChevronLeft, Users, Lock, Sparkles,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useLanguage } from "../../context/LanguageContext.jsx";
@@ -61,6 +61,16 @@ export default function Sidebar({ collapsed, onToggle }) {
             </NavLink>
           );
         })}
+        {plan === "free" && (
+          <NavLink
+            to="/dashboard/upgrade"
+            className={({ isActive }) => `db-nav-item upgrade-cta${isActive ? " active" : ""}`}
+            title={t("sidebar.upgrade")}
+          >
+            <Sparkles size={19} />
+            <span>{t("sidebar.upgrade")}</span>
+          </NavLink>
+        )}
       </nav>
 
       <div className="db-sidebar-bottom">

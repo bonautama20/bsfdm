@@ -263,11 +263,30 @@ export const translations = {
     "sidebar.report": "Report",
     "sidebar.notification": "Notification",
     "sidebar.setting": "Setting",
+    "sidebar.upgrade": "Upgrade",
 
     // ---------- Free/paid plan gating ----------
     "plan.lockedTooltip": "Paid feature — upgrade to unlock",
     "plan.upgradeTitle": "This is a paid feature",
     "plan.upgradeDesc": "Your organization is on the free plan, which includes Production tracking only. Contact your BSFDM representative to upgrade and unlock this and every other module.",
+    "plan.viewUpgradeOptions": "View upgrade options",
+
+    // ---------- Upgrade page (manual payment) ----------
+    "upgrade.title": "Upgrade to Paid",
+    "upgrade.subtitle": "Unlock every module — Client, Vendor, Employee, Community, Report, Notification, and Settings.",
+    "upgrade.comparisonTitle": "What you get",
+    "upgrade.paymentMethodsTitle": "How to pay",
+    "upgrade.bankTransfer": "Bank Transfer",
+    "upgrade.pendingConfirmation": "Waiting for confirmation — we'll upgrade your account shortly.",
+    "upgrade.noteLabel": "Note (optional)",
+    "upgrade.notePlaceholder": "e.g. transferred via BCA, 14 Sept, ref #12345",
+    "upgrade.confirmButton": "I've Paid",
+    "upgrade.submitting": "Submitting...",
+    "upgrade.whatsappButton": "Confirm via WhatsApp",
+    "upgrade.whatsappMessage": "Hi, I've made a payment to upgrade {org} to the paid plan. Please confirm.",
+    "upgrade.error": "Something went wrong. Please try again.",
+    "upgrade.alreadyPaidTitle": "You're already on the paid plan",
+    "upgrade.alreadyPaidDesc": "Every module is unlocked for your organization.",
 
     // ---------- Admin header ----------
     "header.searchPlaceholder": "Search batches, bioponds, clients, employees…",
@@ -1329,11 +1348,30 @@ export const translations = {
     "sidebar.report": "Laporan",
     "sidebar.notification": "Notifikasi",
     "sidebar.setting": "Pengaturan",
+    "sidebar.upgrade": "Upgrade",
 
     // ---------- Gating paket gratis/berbayar ----------
     "plan.lockedTooltip": "Fitur berbayar — upgrade untuk membuka",
     "plan.upgradeTitle": "Ini adalah fitur berbayar",
     "plan.upgradeDesc": "Organisasi Anda menggunakan paket gratis, yang hanya mencakup pelacakan Produksi. Hubungi perwakilan BSFDM Anda untuk upgrade dan membuka fitur ini beserta modul lainnya.",
+    "plan.viewUpgradeOptions": "Lihat pilihan upgrade",
+
+    // ---------- Halaman Upgrade (pembayaran manual) ----------
+    "upgrade.title": "Upgrade ke Berbayar",
+    "upgrade.subtitle": "Buka semua modul — Klien, Vendor, Karyawan, Komunitas, Laporan, Notifikasi, dan Pengaturan.",
+    "upgrade.comparisonTitle": "Yang Anda dapatkan",
+    "upgrade.paymentMethodsTitle": "Cara pembayaran",
+    "upgrade.bankTransfer": "Transfer Bank",
+    "upgrade.pendingConfirmation": "Menunggu konfirmasi — akun Anda akan segera di-upgrade.",
+    "upgrade.noteLabel": "Catatan (opsional)",
+    "upgrade.notePlaceholder": "mis. transfer via BCA, 14 Sept, ref #12345",
+    "upgrade.confirmButton": "Saya Sudah Bayar",
+    "upgrade.submitting": "Mengirim...",
+    "upgrade.whatsappButton": "Konfirmasi via WhatsApp",
+    "upgrade.whatsappMessage": "Halo, saya sudah melakukan pembayaran untuk upgrade {org} ke paket berbayar. Mohon dikonfirmasi.",
+    "upgrade.error": "Terjadi kesalahan. Silakan coba lagi.",
+    "upgrade.alreadyPaidTitle": "Anda sudah menggunakan paket berbayar",
+    "upgrade.alreadyPaidDesc": "Semua modul sudah terbuka untuk organisasi Anda.",
 
     // ---------- Admin header ----------
     "header.searchPlaceholder": "Cari batch, biopond, klien, karyawan…",

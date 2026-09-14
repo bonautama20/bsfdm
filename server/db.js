@@ -2,7 +2,7 @@ import { DatabaseSync } from "node:sqlite";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { seedControlBase, seedDemoOrgAndUsers, migrateRolePermissions } from "./seed.js";
+import { seedControlBase, seedDemoOrgAndUsers, migrateRolePermissions, DEMO_ORG_ID } from "./seed.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // The CONTROL database — auth (users/roles/permissions), the organization
@@ -12,6 +12,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // e.g. to point at a mounted persistent volume on hosts like
 // Render/Railway/Fly.io whose local filesystem is ephemeral.
 export const DB_PATH = process.env.DB_PATH || path.join(__dirname, "data", "control.sqlite3");
+
+// The one organization allowed to edit the shared role/permission template
+// and review other orgs' upgrade requests (see requirePlatformOwner in
+// middleware/auth.js and routes/billing.js). Defaults to the local-dev demo
+// org for convenience — a real deployment MUST set this to its own real
+// organization's id (see migrate-to-multitenant.js's --org-id, or
+// `node set-org-plan.js` to look it up), or the actual operator gets locked
+// out of both of those features after going multi-tenant.
+export const PLATFORM_OWNER_ORG_ID = process.env.PLATFORM_OWNER_ORG_ID || DEMO_ORG_ID;
 const SCHEMA_PATH = path.join(__dirname, "schema-control.sql");
 
 // Best-effort detection of known ephemeral-filesystem hosts (Render, Railway,

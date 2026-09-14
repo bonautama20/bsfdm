@@ -2,12 +2,11 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
 import { db, nowISO } from "../db.js";
-import { requireRole } from "../middleware/auth.js";
+import { requireRole, requirePlatformOwner } from "../middleware/auth.js";
 import { requirePlan } from "../middleware/plan.js";
 import { validateBody, validate } from "../validate.js";
 import { issueResetToken, resolveAppUrl } from "../passwordReset.js";
 import { sendWelcomeEmail } from "../email.js";
-import { DEMO_ORG_ID } from "../seed.js";
 
 const router = Router();
 // Team/role management lives on the Settings page, which is paid-only — see
@@ -21,15 +20,9 @@ const requireSuperAdmin = requireRole("role-super-admin");
 // role_permissions has no org_id (it's a shared template across every
 // tenant for now — see the multi-tenant plan's scope cut), so letting any
 // org's Super Admin edit it would let one company silently change every
-// other company's permission matrix. Only the platform operator's own
-// organization (the original demo org) may edit the shared template; every
-// org can still read it (GET /roles/all is unrestricted).
-function requirePlatformOwner(req, res, next) {
-  if (req.auth?.orgId !== DEMO_ORG_ID) {
-    return res.status(403).json({ error: "Only the platform operator can edit the shared role template." });
-  }
-  next();
-}
+// other company's permission matrix. requirePlatformOwner (middleware/auth.js)
+// restricts that to PLATFORM_OWNER_ORG_ID only; every org can still read it
+// (GET /roles/all is unrestricted).
 
 const toUser = (u) => ({
   id: u.id, name: u.name, email: u.email, roleId: u.role_id,

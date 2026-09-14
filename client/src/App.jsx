@@ -24,6 +24,7 @@ import Community from "./admin/pages/Community.jsx";
 import Reports from "./admin/pages/Reports.jsx";
 import Notifications from "./admin/pages/Notifications.jsx";
 import Settings from "./admin/pages/Settings.jsx";
+import Upgrade from "./admin/pages/Upgrade.jsx";
 
 // ---------- Operator (mobile-first field module) ----------
 import OperatorRoute from "./operator/OperatorRoute.jsx";
@@ -71,6 +72,7 @@ export default function App() {
                 <Route path="reports" element={<PlanGate module="Report"><Reports /></PlanGate>} />
                 <Route path="notifications" element={<PlanGate module="Notification"><Notifications /></PlanGate>} />
                 <Route path="settings" element={<PlanGate module="Setting"><Settings /></PlanGate>} />
+                <Route path="upgrade" element={<Upgrade />} />
               </Route>
 
               <Route

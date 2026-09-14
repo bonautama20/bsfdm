@@ -64,6 +64,22 @@ CREATE TABLE IF NOT EXISTS password_resets (
   created_at TEXT NOT NULL
 );
 
+-- ---------- Manual plan upgrade requests ----------
+-- No payment gateway yet: a free org pays off-platform (QRIS/bank
+-- transfer/e-wallet, see client/src/data/paymentConfig.js) and clicks
+-- "Saya Sudah Bayar" on /dashboard/upgrade, which inserts a pending row
+-- here. The platform operator (PLATFORM_OWNER_ORG_ID) sees pending
+-- requests via `node set-org-plan.js` and upgrades the org with the same
+-- script, which also resolves the matching request.
+CREATE TABLE IF NOT EXISTS upgrade_requests (
+  id          TEXT PRIMARY KEY,
+  org_id      TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  note        TEXT,
+  status      TEXT NOT NULL DEFAULT 'pending', -- pending | approved | dismissed
+  created_at  TEXT NOT NULL,
+  resolved_at TEXT
+);
+
 -- ---------- Maggot cultivator community directory (shared, cross-tenant) ----------
 -- Public landing page shows name/address/kabupaten/provinsi + the province
 -- distribution map only; phone is only ever returned by the authenticated

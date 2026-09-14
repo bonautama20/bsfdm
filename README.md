@@ -90,15 +90,23 @@ satu file SQLite per organisasi, bukan kolom `org_id` di database bersama).
   di server (`server/middleware/plan.js`, balas `402` kalau diblokir), bukan
   cuma disembunyikan di UI. Sidebar admin menampilkan ikon gembok untuk modul
   yang terkunci.
-- **Belum ada payment gateway** — upgrade paket masih manual: setelah
-  pelanggan bayar di luar sistem (transfer bank, dsb.), jalankan:
+- **Belum ada payment gateway — pembayaran manual (QRIS statis/transfer
+  bank/e-wallet)** — organisasi paket free bisa membuka halaman
+  `/dashboard/upgrade` (tombol "Upgrade" muncul di sidebar khusus untuk
+  mereka), yang menampilkan detail pembayaran dari
+  `client/src/data/paymentConfig.js` (**wajib diisi dengan data asli Anda**
+  sebelum go-live — nomor rekening, e-wallet, gambar QRIS, dsb., semuanya
+  masih placeholder). Setelah pelanggan klik "Saya Sudah Bayar", permintaan
+  tersimpan sebagai `pending` di database dan langsung terlihat saat
+  menjalankan:
   ```bash
   cd server
-  npm run set-org-plan                    # tanpa argumen: daftar semua organisasi + plan-nya
-  npm run set-org-plan -- <org-id> paid    # upgrade satu organisasi
+  npm run set-org-plan                    # daftar organisasi + permintaan upgrade yang pending
+  npm run set-org-plan -- <org-id> paid    # upgrade satu organisasi (otomatis menyelesaikan permintaannya)
   ```
   Perubahan langsung berlaku di request berikutnya, tidak perlu pelanggan
-  login ulang.
+  login ulang. Payment gateway sungguhan (Midtrans/Xendit) bisa menyusul
+  nanti tanpa mengubah struktur ini — kolom `plan` di database sudah generik.
 - **Migrasi data lama ke multi-tenant** — kalau ada database single-tenant
   lama (sebelum fitur multi-tenant ini ada) yang perlu dipindahkan menjadi
   organisasi pertama, pakai `server/migrate-to-multitenant.js` (baca komentar
@@ -135,6 +143,7 @@ sekarang paket npm yang berdiri sendiri):
 | `CORS_ORIGIN` | `server/.env` | tidak perlu diisi untuk deploy single-host (lihat catatan di bawah); **wajib** diisi kalau frontend & backend di-deploy terpisah — server *refuse to start* di production tanpa ini pada kasus itu |
 | `DB_PATH` | `server/.env` | `server/data/control.sqlite3` (database bersama: akun, organisasi) — **wajib diarahkan ke volume persisten** di Render/Railway/Fly.io/Heroku (server *refuse to start* kalau terdeteksi platform itu tanpa `DB_PATH`) |
 | `TENANT_DB_DIR` | `server/.env` | folder `tenants/` di sebelah `DB_PATH` (satu file `.sqlite3` per organisasi) — harus di volume persisten yang sama dengan `DB_PATH` |
+| `PLATFORM_OWNER_ORG_ID` | `server/.env` | organisasi demo lokal secara default — **wajib diisi dengan id organisasi Anda sendiri** di deploy sungguhan (jalankan `node set-org-plan.js` tanpa argumen untuk melihat id-nya), kalau tidak Anda akan terkunci dari mengedit template role/permission bersama dan meninjau permintaan upgrade organisasi lain |
 | `BACKUP_DIR` | `server/.env` | folder `backups/` di sebelah database — pastikan juga di volume persisten |
 | `BACKUP_RETENTION_COUNT` | `server/.env` | `14` (jumlah backup harian yang disimpan) |
 | `JWT_SECRET` | `server/.env` | **wajib diisi tetap sebelum go-live** — server *refuse to start* di production tanpa ini |

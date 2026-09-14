@@ -23,6 +23,7 @@ import productionLogsRouter from "./routes/productionLogs.js";
 import miscRouter from "./routes/misc.js";
 import communityPublicRouter from "./routes/communityPublic.js";
 import communitiesRouter from "./routes/communities.js";
+import billingRouter from "./routes/billing.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const isProd = process.env.NODE_ENV === "production";
@@ -142,6 +143,7 @@ app.use("/api/vendors", vendorsRouter);
 app.use("/api/employees", employeesRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/communities", communitiesRouter);
+app.use("/api/billing", billingRouter);
 app.use("/api", productionLogsRouter);
 app.use("/api", miscRouter);
 
