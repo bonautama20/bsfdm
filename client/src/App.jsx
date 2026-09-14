@@ -25,6 +25,8 @@ import Reports from "./admin/pages/Reports.jsx";
 import Notifications from "./admin/pages/Notifications.jsx";
 import Settings from "./admin/pages/Settings.jsx";
 import Upgrade from "./admin/pages/Upgrade.jsx";
+import PlatformAdmin from "./admin/pages/PlatformAdmin.jsx";
+import PlatformOwnerGate from "./admin/PlatformOwnerGate.jsx";
 
 // ---------- Operator (mobile-first field module) ----------
 import OperatorRoute from "./operator/OperatorRoute.jsx";
@@ -73,6 +75,7 @@ export default function App() {
                 <Route path="notifications" element={<PlanGate module="Notification"><Notifications /></PlanGate>} />
                 <Route path="settings" element={<PlanGate module="Setting"><Settings /></PlanGate>} />
                 <Route path="upgrade" element={<Upgrade />} />
+                <Route path="platform" element={<PlatformOwnerGate><PlatformAdmin /></PlatformOwnerGate>} />
               </Route>
 
               <Route

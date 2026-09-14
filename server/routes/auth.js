@@ -1,7 +1,7 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import rateLimit from "express-rate-limit";
-import { db, nowISO, nextId } from "../db.js";
+import { db, nowISO, nextId, PLATFORM_OWNER_ORG_ID } from "../db.js";
 import { signToken, setAuthCookie, clearAuthCookie, requireAuth } from "../middleware/auth.js";
 import { getTenantDb } from "../tenantDb.js";
 import { sendPasswordResetEmail } from "../email.js";
@@ -14,7 +14,7 @@ const toUser = (u) => ({
   status: u.status, lastLogin: u.last_login, createdDate: u.created_date,
 });
 const toRole = (r) => ({ id: r.id, name: r.name, description: r.description });
-const toOrg = (o) => ({ id: o.id, name: o.name, plan: o.plan });
+const toOrg = (o) => ({ id: o.id, name: o.name, plan: o.plan, isPlatformOwner: o.id === PLATFORM_OWNER_ORG_ID });
 
 // Slows down credential-stuffing/brute-force attempts against the login form.
 // Keyed by IP; generous enough not to lock out a real user mistyping a password.

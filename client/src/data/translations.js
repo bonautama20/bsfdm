@@ -261,11 +261,30 @@ export const translations = {
     "sidebar.notification": "Notification",
     "sidebar.setting": "Setting",
     "sidebar.upgrade": "Upgrade",
+    "sidebar.platform": "Platform Admin",
 
     // ---------- Free/paid plan gating ----------
     "plan.lockedTooltip": "Paid feature — upgrade to unlock",
     "plan.upgradeTitle": "This is a paid feature",
     "plan.upgradeDesc": "Your organization is on the free plan, which includes Production tracking only. Contact your BSFDM representative to upgrade and unlock this and every other module.",
+
+    // ---------- Platform admin (platform owner only) ----------
+    "platform.title": "Platform Admin",
+    "platform.subtitle": "Every registered organization across BSFDM — plans, users, and pending upgrade requests.",
+    "platform.kpiOrganizations": "Organizations",
+    "platform.kpiPaid": "Paid",
+    "platform.kpiFree": "Free",
+    "platform.kpiUsers": "Total Users",
+    "platform.colOrganization": "Organization",
+    "platform.colPlan": "Plan",
+    "platform.colUsers": "Users",
+    "platform.colCreated": "Registered",
+    "platform.colUpgradeRequest": "Upgrade Request",
+    "platform.paid": "Paid",
+    "platform.free": "Free",
+    "platform.upgradeToPaid": "Upgrade to Paid",
+    "platform.downgradeToFree": "Downgrade to Free",
+    "platform.failedUpdatePlan": "Failed to update plan.",
     "plan.viewUpgradeOptions": "View upgrade options",
 
     // ---------- Upgrade page (manual payment) ----------
@@ -1345,11 +1364,30 @@ export const translations = {
     "sidebar.notification": "Notifikasi",
     "sidebar.setting": "Pengaturan",
     "sidebar.upgrade": "Upgrade",
+    "sidebar.platform": "Admin Platform",
 
     // ---------- Gating paket gratis/berbayar ----------
     "plan.lockedTooltip": "Fitur berbayar — upgrade untuk membuka",
     "plan.upgradeTitle": "Ini adalah fitur berbayar",
     "plan.upgradeDesc": "Organisasi Anda menggunakan paket gratis, yang hanya mencakup pelacakan Produksi. Hubungi perwakilan BSFDM Anda untuk upgrade dan membuka fitur ini beserta modul lainnya.",
+
+    // ---------- Admin platform (khusus pemilik platform) ----------
+    "platform.title": "Admin Platform",
+    "platform.subtitle": "Semua organisasi yang terdaftar di BSFDM — paket, pengguna, dan permintaan upgrade yang menunggu.",
+    "platform.kpiOrganizations": "Organisasi",
+    "platform.kpiPaid": "Berbayar",
+    "platform.kpiFree": "Gratis",
+    "platform.kpiUsers": "Total Pengguna",
+    "platform.colOrganization": "Organisasi",
+    "platform.colPlan": "Paket",
+    "platform.colUsers": "Pengguna",
+    "platform.colCreated": "Terdaftar",
+    "platform.colUpgradeRequest": "Permintaan Upgrade",
+    "platform.paid": "Berbayar",
+    "platform.free": "Gratis",
+    "platform.upgradeToPaid": "Upgrade ke Berbayar",
+    "platform.downgradeToFree": "Turunkan ke Gratis",
+    "platform.failedUpdatePlan": "Gagal memperbarui paket.",
     "plan.viewUpgradeOptions": "Lihat pilihan upgrade",
 
     // ---------- Halaman Upgrade (pembayaran manual) ----------

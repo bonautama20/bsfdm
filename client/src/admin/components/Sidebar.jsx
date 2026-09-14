@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, Layers, CalendarDays, Building2, Handshake, FileBarChart2,
-  Bell, Settings, ChevronLeft, Users, Lock, Sparkles,
+  Bell, Settings, ChevronLeft, Users, Lock, Sparkles, ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useLanguage } from "../../context/LanguageContext.jsx";
@@ -27,6 +27,7 @@ export default function Sidebar({ collapsed, onToggle }) {
   const { session } = useAuth();
   const { t } = useLanguage();
   const plan = session?.organization?.plan;
+  const isPlatformOwner = session?.organization?.isPlatformOwner;
 
   return (
     <aside className="db-sidebar">
@@ -69,6 +70,16 @@ export default function Sidebar({ collapsed, onToggle }) {
           >
             <Sparkles size={19} />
             <span>{t("sidebar.upgrade")}</span>
+          </NavLink>
+        )}
+        {isPlatformOwner && (
+          <NavLink
+            to="/dashboard/platform"
+            className={({ isActive }) => `db-nav-item${isActive ? " active" : ""}`}
+            title={t("sidebar.platform")}
+          >
+            <ShieldCheck size={19} />
+            <span>{t("sidebar.platform")}</span>
           </NavLink>
         )}
       </nav>
