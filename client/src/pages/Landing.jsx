@@ -50,8 +50,8 @@ const navLinks = [
   { href: "#home", key: "landing.nav.home" },
   { href: "#about", key: "landing.nav.about" },
   { href: "#service", key: "landing.nav.service" },
-  { href: "#features", key: "landing.nav.features" },
-  { href: "#reporting", key: "landing.nav.reporting" },
+  // { href: "#features", key: "landing.nav.features" },
+  // { href: "#reporting", key: "landing.nav.reporting" },
   { href: "#contact", key: "landing.nav.contact" },
   { href: "#community", key: "landing.nav.community" },
 ];
