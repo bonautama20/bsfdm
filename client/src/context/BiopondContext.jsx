@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { api } from "../api/client.js";
+import { useAuth } from "./AuthContext.jsx";
 
 const BiopondContext = createContext(null);
 
@@ -13,6 +14,7 @@ export const addDays = (iso, days) => {
 };
 
 export function BiopondProvider({ children }) {
+  const { session } = useAuth();
   const [racks, setRacks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,9 +25,24 @@ export function BiopondProvider({ children }) {
     return data;
   };
 
+  // Keyed on the logged-in user's id, not just "on mount" — this app is a
+  // single-page SPA, so logging out and into a different account (e.g. an
+  // admin testing as the operator they just created) never unmounts this
+  // provider. Without this, whatever org's data was fetched for the FIRST
+  // session in the tab would keep showing for every account after it, even
+  // though the server's own data is correctly tenant-isolated (see a real
+  // report of this: a fresh operator's harvest form showing another
+  // session's occupied bioponds). Logging out clears the cache instead of
+  // leaving it visible for whoever logs in next.
   useEffect(() => {
+    if (!session?.user?.id) {
+      setRacks([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     refresh().catch((err) => setError(err.message)).finally(() => setLoading(false));
-  }, []);
+  }, [session?.user?.id]);
 
   const allBioponds = useMemo(
     () => racks.flatMap((r) => r.bioponds.map((b) => ({ ...b, rackId: r.id, rackName: r.name }))),

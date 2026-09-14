@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useBiopond, localISODate } from "./BiopondContext.jsx";
 import { api } from "../api/client.js";
+import { useAuth } from "./AuthContext.jsx";
 import { useLanguage } from "./LanguageContext.jsx";
 
 const ProductionLogContext = createContext(null);
@@ -14,6 +15,7 @@ const daysBetween = (fromISO, toISO) => {
 };
 
 export function ProductionLogProvider({ children }) {
+  const { session } = useAuth();
   const { allBioponds } = useBiopond();
   const { t } = useLanguage();
   const [kasgotRecords, setKasgotRecords] = useState([]);
@@ -22,12 +24,22 @@ export function ProductionLogProvider({ children }) {
   const [maggotHarvests, setMaggotHarvests] = useState([]);
   const [readIds, setReadIds] = useState(() => new Set());
 
+  // Same fix as BiopondContext: refetch per logged-in user, not just once on
+  // mount, and clear on logout — otherwise switching accounts in the same
+  // tab leaves the previous session's records/notifications on screen.
   useEffect(() => {
+    if (!session?.user?.id) {
+      setKasgotRecords([]);
+      setBreederRecords([]);
+      setFeedRecords([]);
+      setMaggotHarvests([]);
+      return;
+    }
     api.get("/kasgot-records").then(setKasgotRecords).catch(() => {});
     api.get("/breeder-records").then(setBreederRecords).catch(() => {});
     api.get("/feed-records").then(setFeedRecords).catch(() => {});
     api.get("/maggot-harvests").then(setMaggotHarvests).catch(() => {});
-  }, []);
+  }, [session?.user?.id]);
 
   const addMaggotHarvest = async (data) => {
     const record = await api.post("/maggot-harvests", { date: data.date, biopondLabel: data.biopondLabel, quantityKg: Number(data.quantityKg), createdBy: data.createdBy });
