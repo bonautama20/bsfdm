@@ -206,10 +206,7 @@ export const translations = {
     "login.forgotPassword": "Forgot password?",
     "login.loggingIn": "Logging In...",
     "login.logIn": "Log In",
-    "login.invalidCredentials": "Invalid email or password. Try one of the demo accounts below.",
-    "login.demoAccounts": "Demo Accounts",
-    "login.fillAdmin": "Fill Admin",
-    "login.fillOperator": "Fill Operator",
+    "login.invalidCredentials": "Invalid email or password.",
     "login.noAccount": "Don't have an account?",
     "login.signUpFree": "Sign up free",
 
@@ -1293,10 +1290,7 @@ export const translations = {
     "login.forgotPassword": "Lupa kata sandi?",
     "login.loggingIn": "Sedang Masuk...",
     "login.logIn": "Masuk",
-    "login.invalidCredentials": "Email atau kata sandi salah. Coba salah satu akun demo di bawah.",
-    "login.demoAccounts": "Akun Demo",
-    "login.fillAdmin": "Isi Admin",
-    "login.fillOperator": "Isi Operator",
+    "login.invalidCredentials": "Email atau kata sandi salah.",
     "login.noAccount": "Belum punya akun?",
     "login.signUpFree": "Daftar gratis",
 

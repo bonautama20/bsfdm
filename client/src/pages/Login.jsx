@@ -2,7 +2,7 @@ import React, { useState, useRef, useLayoutEffect, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { gsap } from "gsap";
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, LogIn } from "lucide-react";
-import { useAuth, DEMO_ACCOUNT, DEMO_OPERATOR_ACCOUNT } from "../context/AuthContext.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 import { useLanguage } from "../context/LanguageContext.jsx";
 import LanguageToggle from "../components/ui/LanguageToggle.jsx";
 
@@ -35,8 +35,7 @@ export default function LoginPage() {
         .from(".card .sub", { opacity: 0, y: 14 }, "-=0.4")
         .from(".field", { opacity: 0, y: 14, stagger: 0.08 }, "-=0.3")
         .from(".row-between", { opacity: 0, y: 10 }, "-=0.25")
-        .from(".submit", { opacity: 0, y: 10, scale: 0.97 }, "-=0.2")
-        .from(".demo-box", { opacity: 0, y: 14 }, "-=0.15");
+        .from(".submit", { opacity: 0, y: 10, scale: 0.97 }, "-=0.2");
 
       gsap.utils.toArray(".brand-hex polygon").forEach((el, i) => {
         gsap.to(el, {
@@ -68,12 +67,6 @@ export default function LoginPage() {
     }, rootRef);
     return () => ctx.revert();
   }, [error]);
-
-  const fillDemo = (account) => {
-    setEmail(account.email);
-    setPassword(account.password);
-    setError("");
-  };
 
   const [submitting, setSubmitting] = useState(false);
 
@@ -141,13 +134,6 @@ export default function LoginPage() {
         .login .switch-line{margin-top:20px; text-align:center; font-size:.86rem; color:#4C6157;}
         .login .switch-line a{font-weight:700; color:#01613C;}
         .login .switch-line a:hover{text-decoration:underline;}
-
-        .login .demo-box{margin-top:26px; border:1.5px dashed #E36B14; background:#FFF6EF; border-radius:12px; padding:14px 16px;}
-        .login .demo-box .dt{font-size:.76rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:#E36B14; margin-bottom:8px;}
-        .login .demo-box .dl{font-size:.86rem; color:#0F241A; line-height:1.7;}
-        .login .demo-box .dl b{font-weight:700;}
-        .login .demo-box .fill-btn{font-size:.8rem; font-weight:700; color:#E36B14; background:none; border:1.5px solid #E36B14; padding:7px 14px; border-radius:99px;}
-        .login .demo-box .fill-btn:hover{background:#E36B14; color:#fff;}
 
         @media (max-width:900px){
           .login{grid-template-columns:1fr;}
@@ -250,18 +236,6 @@ export default function LoginPage() {
           <div className="switch-line">
             {t("login.noAccount")}{" "}
             <a href="/register" onClick={(e) => { e.preventDefault(); navigate("/register"); }}>{t("login.signUpFree")}</a>
-          </div>
-
-          <div className="demo-box">
-            <div className="dt">{t("login.demoAccounts")}</div>
-            <div className="dl">
-              <b>Admin</b> — {DEMO_ACCOUNT.email} / {DEMO_ACCOUNT.password}<br />
-              <b>Operator</b> — {DEMO_OPERATOR_ACCOUNT.email} / {DEMO_OPERATOR_ACCOUNT.password}
-            </div>
-            <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-              <button type="button" className="fill-btn" onClick={() => fillDemo(DEMO_ACCOUNT)}>{t("login.fillAdmin")}</button>
-              <button type="button" className="fill-btn" onClick={() => fillDemo(DEMO_OPERATOR_ACCOUNT)}>{t("login.fillOperator")}</button>
-            </div>
           </div>
         </div>
       </div>

@@ -5,9 +5,6 @@ const AuthContext = createContext(null);
 
 const STORAGE_KEY = "bsfdm_session";
 
-export const DEMO_ACCOUNT = { email: "admin@bsfdm.com", password: "bsfdm123" };
-export const DEMO_OPERATOR_ACCOUNT = { email: "andi@bsfdm.com", password: "operator123" };
-
 function loadSession() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
