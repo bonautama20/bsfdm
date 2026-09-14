@@ -54,12 +54,22 @@ router.post("/", requirePermission("Production", "create"), (req, res) => {
   const { name, count } = req.body || {};
   if (!name || !count || Number(count) < 1) return res.status(400).json({ error: "Rack name and a positive biopond count are required." });
 
+  // A real report of this: the UI's suggested next name isn't always unique
+  // (it's derived from the rack count, not the names actually in use), so a
+  // careless click could create a second rack with an identical name —
+  // confusing since it looks like "duplicate data" rather than what it is,
+  // two separate racks. There's no legitimate reason for two racks in the
+  // same org to share a name, so this is a hard block, not just a UI nudge.
+  const nameTrimmed = name.trim();
+  const existing = req.db.prepare("SELECT id FROM racks WHERE lower(name) = lower(?)").get(nameTrimmed);
+  if (existing) return res.status(409).json({ error: `A rack named "${nameTrimmed}" already exists. Add bioponds to it instead, or pick a different name.` });
+
   const quotaError = checkBiopondQuota(req, Number(count));
   if (quotaError) return res.status(402).json(quotaError);
 
   const id = `RAK-${Date.now()}`;
   const ts = nowISO();
-  req.db.prepare("INSERT INTO racks (id, name, created_at, updated_at) VALUES (?,?,?,?)").run(id, name, ts, ts);
+  req.db.prepare("INSERT INTO racks (id, name, created_at, updated_at) VALUES (?,?,?,?)").run(id, nameTrimmed, ts, ts);
 
   const insertBiopond = req.db.prepare(
     "INSERT INTO bioponds (id, rack_id, number, status, created_at, updated_at) VALUES (?,?,?,'Available',?,?)"
@@ -74,7 +84,12 @@ router.post("/", requirePermission("Production", "create"), (req, res) => {
 router.patch("/:rackId", requirePermission("Production", "edit"), (req, res) => {
   const { name } = req.body || {};
   if (!name) return res.status(400).json({ error: "Name is required." });
-  const result = req.db.prepare("UPDATE racks SET name = ?, updated_at = ? WHERE id = ?").run(name, nowISO(), req.params.rackId);
+
+  const nameTrimmed = name.trim();
+  const existing = req.db.prepare("SELECT id FROM racks WHERE lower(name) = lower(?) AND id != ?").get(nameTrimmed, req.params.rackId);
+  if (existing) return res.status(409).json({ error: `A rack named "${nameTrimmed}" already exists.` });
+
+  const result = req.db.prepare("UPDATE racks SET name = ?, updated_at = ? WHERE id = ?").run(nameTrimmed, nowISO(), req.params.rackId);
   if (result.changes === 0) return res.status(404).json({ error: "Rack not found." });
   res.json({ ok: true });
 });

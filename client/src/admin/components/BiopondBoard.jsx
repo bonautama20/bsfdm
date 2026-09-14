@@ -72,7 +72,19 @@ export default function BiopondBoard() {
   }, [racks, search, statusFilter]);
 
   // ---------- Rack management ----------
-  const openAddLine = () => { setLineForm({ name: `Rak ${String.fromCharCode(65 + racks.length)}`, count: 20 }); setAddLineOpen(true); };
+  // Picks the first "Rak X" letter not already in use, instead of deriving
+  // it from the rack count — the latter can suggest a name that already
+  // exists (e.g. after a rack was deleted, or two people adding racks at
+  // the same time), which used to let a rack silently get created with a
+  // duplicate name; the server now rejects that outright, but a good
+  // default here avoids the user ever hitting that error in the first place.
+  const nextRackName = () => {
+    const used = new Set(racks.map((r) => r.name.trim().toLowerCase()));
+    let code = 65;
+    while (used.has(`rak ${String.fromCharCode(code)}`.toLowerCase()) && code < 90) code++;
+    return `Rak ${String.fromCharCode(code)}`;
+  };
+  const openAddLine = () => { setLineForm({ name: nextRackName(), count: 20 }); setAddLineOpen(true); };
 
   const handleAddLine = async (e) => {
     e.preventDefault();
