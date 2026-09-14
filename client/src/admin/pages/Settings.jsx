@@ -56,6 +56,7 @@ export default function Settings() {
   // Users
   const [users, setUsers] = useState([]);
   const [userModal, setUserModal] = useState(false);
+  const [editingUserId, setEditingUserId] = useState(null);
   const [userForm, setUserForm] = useState({ name: "", email: "", roleId: "" });
   const [resetTarget, setResetTarget] = useState(null);
   const [resetting, setResetting] = useState(false);
@@ -127,15 +128,32 @@ export default function Settings() {
 
   const employeeName = (id) => employees.find((e) => e.id === id)?.name || id;
 
-  const addUser = async (e) => {
+  const openAddUser = () => { setEditingUserId(null); setUserForm({ name: "", email: "", roleId: roles[0]?.id || "" }); setUserModal(true); };
+  // Owner/Super Admin rows aren't editable here — the highest-standing roles
+  // shouldn't be casually renamed/reassigned via a quick inline edit; use
+  // Settings > Role & Permission or a direct DB change for those instead.
+  const openEditUser = (user) => {
+    setEditingUserId(user.id);
+    setUserForm({ name: user.name, email: user.email, roleId: user.roleId });
+    setUserModal(true);
+  };
+
+  const saveUser = async (e) => {
     e.preventDefault();
+    const isEdit = !!editingUserId;
+    const targetId = editingUserId;
     setUserModal(false);
     try {
-      const user = await api.post("/users", userForm);
-      setUsers((prev) => [...prev, user]);
-      setUserForm({ name: "", email: "", roleId: roles[0]?.id || "" });
+      if (isEdit) {
+        const updated = await api.patch(`/users/${targetId}`, userForm);
+        setUsers((prev) => prev.map((u) => u.id === targetId ? updated : u));
+      } else {
+        const user = await api.post("/users", userForm);
+        setUsers((prev) => [...prev, user]);
+        setUserForm({ name: "", email: "", roleId: roles[0]?.id || "" });
+      }
     } catch (err) {
-      alert(err.message || t("settings.failedAddUser"));
+      alert(err.message || (isEdit ? t("settings.failedSaveUser") : t("settings.failedAddUser")));
     }
   };
 
@@ -282,7 +300,7 @@ export default function Settings() {
             <h3>{t("settings.systemUsers")}</h3>
             <div style={{ display: "flex", gap: 8 }}>
               <button className="db-btn db-btn-outline db-btn-sm" onClick={openUpload}><Upload size={14} /> {t("settings.uploadUsersExcel")}</button>
-              <button className="db-btn db-btn-primary db-btn-sm" onClick={() => setUserModal(true)}><Plus size={14} /> {t("settings.addUser")}</button>
+              <button className="db-btn db-btn-primary db-btn-sm" onClick={openAddUser}><Plus size={14} /> {t("settings.addUser")}</button>
             </div>
           </div>
           <DataTable
@@ -296,6 +314,9 @@ export default function Settings() {
               {
                 key: "actions", label: "", render: (r) => (
                   <div style={{ display: "flex", gap: 6 }}>
+                    {r.roleId !== "role-super-admin" && r.roleId !== "role-owner" && (
+                      <button className="db-btn db-btn-ghost db-btn-sm" title={t("common.edit")} onClick={() => openEditUser(r)}><Pencil size={13} /></button>
+                    )}
                     <button className="db-btn db-btn-ghost db-btn-sm" title={t("settings.resetPassword")} onClick={() => setResetTarget(r)}><KeyRound size={13} /></button>
                     <button className="db-btn db-btn-ghost db-btn-sm" title={r.status === "Active" ? t("settings.deactivate") : t("settings.activate")} onClick={() => toggleUserStatus(r.id)}><Power size={13} /></button>
                     <button className="db-btn db-btn-ghost db-btn-sm" title={t("common.delete")} onClick={() => setDeleteUserId(r.id)}><Trash2 size={13} /></button>
@@ -405,9 +426,9 @@ export default function Settings() {
       )}
 
       {/* Modals */}
-      <Modal open={userModal} onClose={() => setUserModal(false)} title={t("settings.addUserTitle")}
-        footer={<><button className="db-btn db-btn-outline" onClick={() => setUserModal(false)}>{t("common.cancel")}</button><button className="db-btn db-btn-primary" form="user-form" type="submit">{t("settings.addUser")}</button></>}>
-        <form id="user-form" onSubmit={addUser}>
+      <Modal open={userModal} onClose={() => setUserModal(false)} title={editingUserId ? t("settings.editUserTitle") : t("settings.addUserTitle")}
+        footer={<><button className="db-btn db-btn-outline" onClick={() => setUserModal(false)}>{t("common.cancel")}</button><button className="db-btn db-btn-primary" form="user-form" type="submit">{editingUserId ? t("common.save") : t("settings.addUser")}</button></>}>
+        <form id="user-form" onSubmit={saveUser}>
           <div className="db-field"><label>{t("common.name")}</label><input value={userForm.name} onChange={(e) => setUserForm({ ...userForm, name: e.target.value })} required /></div>
           <div className="db-field"><label>{t("common.email")}</label><input type="email" value={userForm.email} onChange={(e) => setUserForm({ ...userForm, email: e.target.value })} required /></div>
           <div className="db-field">
@@ -416,7 +437,7 @@ export default function Settings() {
               {roles.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
             </select>
           </div>
-          <p style={{ fontSize: ".78rem", color: "var(--db-muted)", marginTop: 14 }}>{t("settings.addUserEmailNote")}</p>
+          {!editingUserId && <p style={{ fontSize: ".78rem", color: "var(--db-muted)", marginTop: 14 }}>{t("settings.addUserEmailNote")}</p>}
         </form>
       </Modal>
 
