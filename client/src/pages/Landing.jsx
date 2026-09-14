@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import bsfImg from "../assets/bsf-img.png";
 import maggotImg from "../assets/maggot-img.png";
+import logoHeader from "../assets/logoheader.png";
+import logoFooterWhite from "../assets/logo-white-footer.png";
 import LanguageToggle from "../components/ui/LanguageToggle.jsx";
 import CommunityMap from "../components/CommunityMap.jsx";
 import { useLanguage } from "../context/LanguageContext.jsx";
@@ -37,12 +39,6 @@ const BatchRing = ({ percent }) => {
     </svg>
   );
 };
-
-const LogoMark = ({ size = 34 }) => (
-  <svg className="mark" viewBox="0 0 40 40" fill="none" style={{ width: size, height: size }}>
-    <polygon points="20,3 34.6,11.5 34.6,28.5 20,37 5.4,28.5 5.4,11.5" fill="#01613C" />
-  </svg>
-);
 
 const datasets = {
   weekly: { labels: ["W1", "W2", "W3", "W4", "W5", "W6"], values: [62, 70, 58, 74, 80, 88] },
@@ -222,7 +218,9 @@ export default function Landing() {
         .bsfdm header{position:fixed; top:0; left:0; right:0; z-index:200; padding:22px 0; transition:all .35s ease;}
         .bsfdm header.scrolled{padding:12px 0; background:rgba(246,248,244,.85); backdrop-filter:blur(14px); box-shadow:0 1px 0 var(--line);}
         .bsfdm nav{display:flex; align-items:center; justify-content:space-between;}
-        .bsfdm .logo{display:flex; align-items:center; gap:10px; font-family:var(--font-display); font-weight:800; font-size:1.18rem; color:var(--ink);}
+        .bsfdm .logo{display:flex; align-items:center;}
+        .bsfdm .logo-img{height:40px; width:auto; display:block;}
+        @media (max-width:900px){ .bsfdm .logo-img{height:34px;} }
         .bsfdm .nav-links{display:flex; align-items:center; gap:38px;}
         .bsfdm .nav-links a{font-size:.92rem; font-weight:600; color:var(--ink-soft); position:relative; padding:4px 0;}
         .bsfdm .nav-links a:hover{color:var(--ink);}
@@ -420,7 +418,8 @@ export default function Landing() {
 
         .bsfdm footer{background:var(--navy-dark); color:rgba(255,255,255,.7); padding:80px 0 0; margin-top:130px;}
         .bsfdm .foot-grid{display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:40px; padding-bottom:56px; border-bottom:1px solid rgba(255,255,255,.1);}
-        .bsfdm .foot-logo{display:flex; align-items:center; gap:10px; color:#fff; font-family:var(--font-display); font-weight:800; font-size:1.2rem; margin-bottom:16px;}
+        .bsfdm .foot-logo{display:flex; align-items:center; margin-bottom:16px;}
+        .bsfdm .foot-logo-img{height:44px; width:auto; display:block;}
         .bsfdm .foot-grid p{color:rgba(255,255,255,.55); font-size:.88rem; max-width:280px;}
         .bsfdm .foot-grid h5{color:#fff; font-family:var(--font-display); font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; margin-bottom:18px;}
         .bsfdm .foot-grid ul{display:flex; flex-direction:column; gap:12px;}
@@ -443,8 +442,7 @@ export default function Landing() {
           <div className="container">
             <nav>
               <a href="#home" className="logo">
-                <LogoMark />
-                BSFDM
+                <img src={logoHeader} alt="BSFDM" className="logo-img" />
               </a>
               <ul className="nav-links">
                 {navLinks.map((n) => (
@@ -466,8 +464,7 @@ export default function Landing() {
         <div className={`mobile-panel ${mobileOpen ? "open" : ""}`}>
           <div className="top">
             <a href="#home" className="logo" onClick={() => setMobileOpen(false)}>
-              <LogoMark />
-              BSFDM
+              <img src={logoHeader} alt="BSFDM" className="logo-img" />
             </a>
             <button aria-label={t("landing.nav.closeMenu")} onClick={() => setMobileOpen(false)}>
               <X size={26} />
@@ -920,8 +917,7 @@ export default function Landing() {
             <div className="foot-grid">
               <div>
                 <div className="foot-logo">
-                  <LogoMark />
-                  BSFDM
+                  <img src={logoFooterWhite} alt="BSFDM" className="foot-logo-img" />
                 </div>
                 <p>{t("landing.footer.tagline")}</p>
                 <div className="foot-social">
