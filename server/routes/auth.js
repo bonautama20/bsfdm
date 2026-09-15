@@ -38,10 +38,14 @@ router.post("/login", loginLimiter, (req, res) => {
     return res.status(403).json({ error: "This account has been deactivated." });
   }
 
+  const org = db.prepare("SELECT * FROM organizations WHERE id = ?").get(user.org_id);
+  if (!org || org.status === "suspended") {
+    return res.status(403).json({ error: "Your organization no longer has access. Contact support." });
+  }
+
   db.prepare("UPDATE users SET last_login = ? WHERE id = ?").run(nowISO(), user.id);
 
   const role = db.prepare("SELECT * FROM roles WHERE id = ?").get(user.role_id);
-  const org = db.prepare("SELECT * FROM organizations WHERE id = ?").get(user.org_id);
   setAuthCookie(res, signToken(user));
 
   res.json({
@@ -56,13 +60,14 @@ router.post("/logout", (req, res) => {
   res.status(204).end();
 });
 
-// Generous enough for a real founder retyping details after a typo, tight
+// Generous enough for a real founder retyping details after a typo (or a
+// small office signing up several accounts from behind one NAT'd IP), tight
 // enough to blunt a script hammering this into spinning up many organizations
 // (each signup creates a whole new tenant database — a heavier write than a
 // login attempt).
 const registerLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 8,
+  limit: 20,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many signup attempts. Please wait a few minutes and try again." },

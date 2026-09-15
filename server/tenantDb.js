@@ -60,3 +60,21 @@ export function getTenantDb(orgId) {
   }
   return tenantDb;
 }
+
+// Permanently removes an organization's entire database — used when the
+// platform owner deletes a customer (see routes/platform.js). Closes the
+// cached connection first (if this process has one open) so nothing keeps
+// writing to a file that's about to disappear, then removes the main file
+// and its WAL/SHM sidecars. Irreversible: callers are responsible for
+// confirming this is really wanted before calling it.
+export function deleteTenantDb(orgId) {
+  const existing = connections.get(orgId);
+  if (existing) {
+    existing.close();
+    connections.delete(orgId);
+  }
+  const dbPath = tenantDbPath(orgId);
+  for (const suffix of ["", "-wal", "-shm"]) {
+    fs.rmSync(`${dbPath}${suffix}`, { force: true });
+  }
+}

@@ -59,12 +59,22 @@ export function verifyToken(token) {
 }
 
 // Attaches req.auth = { id, roleId, orgId } when a valid cookie is present;
-// otherwise 401s.
+// otherwise 401s. Also checked on EVERY authenticated request (not just
+// login) whether the org still exists and isn't suspended — see
+// routes/platform.js's delete/status endpoints. A JWT is normally trusted
+// without a DB round-trip, but this one check is cheap (indexed lookup by
+// primary key) and is what actually makes "delete" and "suspend" take
+// effect immediately for a session that's already logged in, rather than
+// only on their next login.
 export function requireAuth(req, res, next) {
   const token = req.cookies?.[COOKIE_NAME];
   if (!token) return res.status(401).json({ error: "Not authenticated." });
   try {
     const payload = verifyToken(token);
+    const org = db.prepare("SELECT status FROM organizations WHERE id = ?").get(payload.orgId);
+    if (!org || org.status === "suspended") {
+      return res.status(403).json({ error: "Your organization no longer has access. Contact support." });
+    }
     req.auth = { id: payload.sub, roleId: payload.roleId, orgId: payload.orgId };
     next();
   } catch {

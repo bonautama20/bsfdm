@@ -1,16 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { Building2, Users, CheckCircle2, Gift, Clock } from "lucide-react";
+import { Building2, Users, CheckCircle2, Gift, Clock, Power, Trash2 } from "lucide-react";
 import { api } from "../../api/client.js";
 import DataTable from "../../components/ui/DataTable.jsx";
 import Badge from "../../components/ui/Badge.jsx";
+import ConfirmDialog from "../../components/ui/ConfirmDialog.jsx";
+import { useAuth } from "../../context/AuthContext.jsx";
 import { useLanguage } from "../../context/LanguageContext.jsx";
 import { fmtDate, fmtNumber } from "../../utils/format.js";
 
 export default function PlatformAdmin() {
   const { t } = useLanguage();
+  const { session } = useAuth();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [busyOrgId, setBusyOrgId] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null); // org object, or null
+  const [deleting, setDeleting] = useState(false);
 
   const load = () => {
     api.get("/platform/stats").then(setData).catch((err) => setError(err.message));
@@ -28,6 +33,33 @@ export default function PlatformAdmin() {
       alert(err.message || t("platform.failedUpdatePlan"));
     } finally {
       setBusyOrgId(null);
+    }
+  };
+
+  const toggleStatus = async (org) => {
+    const nextStatus = org.status === "suspended" ? "active" : "suspended";
+    setBusyOrgId(org.id);
+    try {
+      await api.post(`/platform/organizations/${org.id}/status`, { status: nextStatus });
+      load();
+    } catch (err) {
+      alert(err.message || t("platform.failedUpdateStatus"));
+    } finally {
+      setBusyOrgId(null);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await api.delete(`/platform/organizations/${deleteTarget.id}`);
+      setDeleteTarget(null);
+      load();
+    } catch (err) {
+      alert(err.message || t("platform.failedDeleteOrg"));
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -50,6 +82,9 @@ export default function PlatformAdmin() {
     { key: "plan", label: t("platform.colPlan"), sortable: true, render: (o) => (
       <Badge tone={o.plan === "paid" ? "green" : "gray"}>{o.plan === "paid" ? t("platform.paid") : t("platform.free")}</Badge>
     ) },
+    { key: "status", label: t("platform.colStatus"), sortable: true, render: (o) => (
+      <Badge tone={o.status === "suspended" ? "red" : "green"}>{o.status === "suspended" ? t("platform.suspended") : t("platform.active")}</Badge>
+    ) },
     { key: "userCount", label: t("platform.colUsers"), sortable: true, sortValue: (o) => o.userCount },
     { key: "createdAt", label: t("platform.colCreated"), sortable: true, render: (o) => fmtDate(o.createdAt) },
     { key: "pendingUpgradeRequest", label: t("platform.colUpgradeRequest"), render: (o) => (
@@ -60,15 +95,43 @@ export default function PlatformAdmin() {
         </div>
       ) : <span style={{ color: "var(--db-muted)" }}>—</span>
     ) },
-    { key: "actions", label: "", render: (o) => (
-      <button
-        className={`db-btn db-btn-sm ${o.plan === "paid" ? "db-btn-outline" : "db-btn-primary"}`}
-        disabled={busyOrgId === o.id}
-        onClick={() => togglePlan(o)}
-      >
-        {o.plan === "paid" ? t("platform.downgradeToFree") : t("platform.upgradeToPaid")}
-      </button>
-    ) },
+    { key: "actions", label: "", render: (o) => {
+      // The platform owner's own organization can't be suspended or deleted
+      // (see routes/platform.js) — hide those actions here too, rather than
+      // let a click round-trip to the server just to bounce off a 400.
+      const isSelf = o.id === session?.organization?.id;
+      return (
+        <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+          <button
+            className={`db-btn db-btn-sm ${o.plan === "paid" ? "db-btn-outline" : "db-btn-primary"}`}
+            disabled={busyOrgId === o.id}
+            onClick={() => togglePlan(o)}
+          >
+            {o.plan === "paid" ? t("platform.downgradeToFree") : t("platform.upgradeToPaid")}
+          </button>
+          {!isSelf && (
+            <>
+              <button
+                className="db-btn db-btn-ghost db-btn-sm"
+                title={o.status === "suspended" ? t("platform.activate") : t("platform.suspend")}
+                disabled={busyOrgId === o.id}
+                onClick={() => toggleStatus(o)}
+              >
+                <Power size={13} />
+              </button>
+              <button
+                className="db-btn db-btn-ghost db-btn-sm"
+                title={t("common.delete")}
+                disabled={busyOrgId === o.id}
+                onClick={() => setDeleteTarget(o)}
+              >
+                <Trash2 size={13} />
+              </button>
+            </>
+          )}
+        </div>
+      );
+    } },
   ];
 
   return (
@@ -106,6 +169,15 @@ export default function PlatformAdmin() {
       <div className="db-card">
         {data && <DataTable columns={columns} rows={data.organizations} pageSize={10} />}
       </div>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        loading={deleting}
+        title={t("platform.deleteOrgTitle")}
+        message={t("platform.deleteOrgMessage", { name: deleteTarget?.name || "" })}
+      />
     </div>
   );
 }
