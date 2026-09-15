@@ -949,10 +949,10 @@ export default function Landing() {
                 <h5>{t("landing.footer.contactHeading")}</h5>
                 <ul>
                   <li>{t("landing.footer.email")}<br />
-                    <a href="mailto:info@bsfdm.com">info@bsfdm.com</a>
+                    <a href="mailto:halo@bsfdm.id">halo@bsfdm.id</a>
                   </li>
                   <li>{t("landing.footer.website")}<br />
-                    <a href="#">www.bsfdm.com</a>
+                    <a href="#">www.bsfdm.id</a>
                   </li>
                 </ul>
               </div>
