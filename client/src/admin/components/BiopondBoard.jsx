@@ -305,11 +305,25 @@ export default function BiopondBoard() {
             </div>
           </div>
           <div className="db-field">
-            <label>{t("biopond.feedSource")}</label>
-            <select className="db-select" style={{ width: "100%" }} value={formData.feedSource} onChange={(e) => setFormData({ ...formData, feedSource: e.target.value })} required>
-              <option value="" disabled>{t("biopond.selectFeedSource")}</option>
-              {hotels.map((h) => <option key={h.id} value={h.name}>{h.name}</option>)}
-            </select>
+            {/* Free text, not a locked-in dropdown — Client is a paid-only
+                module (server/middleware/plan.js), so a free-plan farm has
+                no clients to pick from at all. Only required once the farm
+                actually has client records to track the source against. */}
+            <label>{hotels.length > 0 ? t("biopond.feedSource") : t("biopond.feedSourceOptional")}</label>
+            <input
+              type="text"
+              list="feed-source-suggestions"
+              style={{ width: "100%" }}
+              placeholder={t("biopond.feedSourcePlaceholder")}
+              value={formData.feedSource}
+              onChange={(e) => setFormData({ ...formData, feedSource: e.target.value })}
+              required={hotels.length > 0}
+            />
+            {hotels.length > 0 && (
+              <datalist id="feed-source-suggestions">
+                {hotels.map((h) => <option key={h.id} value={h.name} />)}
+              </datalist>
+            )}
           </div>
           <div className="db-field">
             <label>{t("biopond.harvestDate")} <span style={{ fontWeight: 500, color: "var(--db-muted)" }}>{t("biopond.harvestDateAuto", { days: HARVEST_DAYS })}</span></label>

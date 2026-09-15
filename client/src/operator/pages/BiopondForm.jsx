@@ -10,13 +10,20 @@ import { useLanguage } from "../../context/LanguageContext.jsx";
 
 const emptyForm = { biopondKey: "", babyMaggotQty: "", dateIn: localISODate(), feedInKg: "", feedSource: "" };
 
-function validate(form, t) {
+// Feed Source is only required once the farm actually has client records to
+// pick from (Client is a paid-only module — see server/middleware/plan.js) —
+// a free-plan farm has no clients to select at all, so requiring one here
+// would make it impossible to ever start a biopond. Once clients exist, the
+// farm is expected to track which one supplied the feed, so it becomes
+// required (still free text, not a locked-in dropdown value, in case the
+// real source isn't one of the recorded clients).
+function validate(form, t, hasClients) {
   const errs = {};
   if (!form.biopondKey) errs.biopondKey = t("biopondForm.selectBiopond");
   if (!form.babyMaggotQty || Number(form.babyMaggotQty) <= 0) errs.babyMaggotQty = t("biopondForm.babyMaggotQtyRequired");
   if (!form.dateIn) errs.dateIn = t("biopondForm.stockingDateRequired");
   if (!form.feedInKg || Number(form.feedInKg) <= 0) errs.feedInKg = t("biopondForm.feedAmountRequired");
-  if (!form.feedSource) errs.feedSource = t("biopondForm.feedSourceRequired");
+  if (hasClients && !form.feedSource.trim()) errs.feedSource = t("biopondForm.feedSourceRequired");
   return errs;
 }
 
@@ -39,13 +46,14 @@ export default function BiopondForm() {
     r.bioponds.filter((b) => b.status === "Available").map((b) => ({ key: `${r.id}|${b.id}`, rackId: r.id, biopondId: b.id, label: `${r.name} - Biopond ${b.number}` }))
   ), [racks]);
 
-  const errors = touched ? validate(form, t) : {};
+  const hasClients = hotels.length > 0;
+  const errors = touched ? validate(form, t, hasClients) : {};
   const harvestDate = form.dateIn ? addDays(form.dateIn, HARVEST_CYCLE_DAYS) : "";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setTouched(true);
-    if (Object.keys(validate(form, t)).length > 0) return;
+    if (Object.keys(validate(form, t, hasClients)).length > 0) return;
     if (typeof navigator !== "undefined" && navigator.onLine === false) { setNetError(true); return; }
     setNetError(false);
     setSaving(true);
@@ -121,11 +129,19 @@ export default function BiopondForm() {
           </div>
 
           <div className={`op-field ${errors.feedSource ? "has-err" : ""}`}>
-            <label>{t("biopondForm.feedSource")}</label>
-            <select value={form.feedSource} onChange={(e) => setForm({ ...form, feedSource: e.target.value })}>
-              <option value="" disabled>{t("biopondForm.selectFeedSource")}</option>
-              {hotels.map((h) => <option key={h.id} value={h.name}>{h.name}</option>)}
-            </select>
+            <label>{hasClients ? t("biopondForm.feedSource") : t("biopondForm.feedSourceOptional")}</label>
+            <input
+              type="text"
+              list="feed-source-suggestions"
+              placeholder={t("biopondForm.feedSourcePlaceholder")}
+              value={form.feedSource}
+              onChange={(e) => setForm({ ...form, feedSource: e.target.value })}
+            />
+            {hasClients && (
+              <datalist id="feed-source-suggestions">
+                {hotels.map((h) => <option key={h.id} value={h.name} />)}
+              </datalist>
+            )}
             {errors.feedSource && <div className="err">{errors.feedSource}</div>}
           </div>
 
