@@ -433,25 +433,25 @@ export default function Production() {
             <p className="sub">{t("production.noCagesYet")}</p>
           ) : (
             <>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
                 {breederCages.map((c) => (
                   <div
                     key={c.id}
-                    className={`db-btn db-btn-sm ${selectedCageId === c.id ? "db-btn-primary" : "db-btn-outline"}`}
-                    style={{ padding: "0 0 0 12px", gap: 2 }}
+                    className={`db-btn ${selectedCageId === c.id ? "db-btn-primary" : "db-btn-outline"}`}
+                    style={{ padding: "0 0 0 20px", gap: 4, fontSize: "1rem" }}
                   >
                     <button
                       onClick={() => selectCage(c.id)}
-                      style={{ background: "none", border: "none", color: "inherit", font: "inherit", cursor: "pointer", padding: "7px 4px" }}
+                      style={{ background: "none", border: "none", color: "inherit", font: "inherit", cursor: "pointer", padding: "13px 6px" }}
                     >
                       {c.id}
                     </button>
                     <button
                       onClick={() => setDeleteCageId(c.id)}
                       title={t("common.delete")}
-                      style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", display: "flex", padding: "7px 10px", opacity: .75 }}
+                      style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", display: "flex", padding: "13px 16px", opacity: .75 }}
                     >
-                      <Trash2 size={12} />
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 ))}
