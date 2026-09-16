@@ -15,7 +15,7 @@ import { monthlySales, newContracts, contractStats } from "../../data/dummyData.
 import { api } from "../../api/client.js";
 import { useProductionLog } from "../../context/ProductionLogContext.jsx";
 import { useLanguage } from "../../context/LanguageContext.jsx";
-import { fmtNumber, fmtCurrency, fmtDate } from "../../utils/format.js";
+import { fmtNumber, fmtQty, fmtCurrency, fmtDate } from "../../utils/format.js";
 
 const PERIODS = ["Daily", "Weekly", "Monthly", "Quarterly", "Yearly", "Custom"];
 const PIE_COLORS = ["#01613C", "#E36B14", "#8FBE28"];
@@ -104,7 +104,7 @@ export default function Reports() {
       columns: [
         { key: "date", label: t("common.date"), fmt: (r) => fmtDate(r.date) },
         { key: "biopondLabel", label: t("production.colBiopond"), fmt: (r) => r.biopondLabel || "—" },
-        { key: "quantityKg", label: t("production.colQuantityKg"), fmt: (r) => fmtNumber(r.quantityKg) },
+        { key: "quantityKg", label: t("production.colQuantityKg"), fmt: (r) => fmtQty(r.quantityKg) },
         { key: "createdBy", label: t("production.colRecordedBy"), fmt: (r) => r.createdBy || "—" },
       ],
     },

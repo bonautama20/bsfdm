@@ -92,7 +92,7 @@ export default function MaggotHarvestForm() {
           <div className={`op-field ${errors.quantityKg ? "has-err" : ""}`}>
             <label>{t("maggotForm.harvestQuantity")}</label>
             <div className="op-input-unit">
-              <input type="number" min={1} placeholder="e.g. 25" value={form.quantityKg} onChange={(e) => setForm({ ...form, quantityKg: e.target.value })} />
+              <input type="number" min={0.01} step="any" placeholder="e.g. 25.5" value={form.quantityKg} onChange={(e) => setForm({ ...form, quantityKg: e.target.value })} />
               <span className="unit-suffix">kg</span>
             </div>
             {errors.quantityKg && <div className="err">{errors.quantityKg}</div>}

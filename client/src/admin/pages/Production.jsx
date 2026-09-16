@@ -11,7 +11,7 @@ import { useProductionLog } from "../../context/ProductionLogContext.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { api } from "../../api/client.js";
 import { useLanguage } from "../../context/LanguageContext.jsx";
-import { fmtNumber, fmtDate } from "../../utils/format.js";
+import { fmtNumber, fmtQty, fmtDate } from "../../utils/format.js";
 
 function Field({ label, children }) {
   return <div className="db-field"><label>{label}</label>{children}</div>;
@@ -301,8 +301,8 @@ export default function Production() {
           <div className="db-kpi">
             <div className="ic-wrap"><Scale size={20} /></div>
             <div className="label">{t("production.maggotHarvest")}</div>
-            <div className="value">{fmtNumber(maggotHarvestStats.todayKg)} {t("production.kgToday")}</div>
-            <div className="foot"><span className="today">{fmtNumber(maggotHarvestStats.monthKg)} {t("production.kgThisMonth")}</span></div>
+            <div className="value">{fmtQty(maggotHarvestStats.todayKg)} {t("production.kgToday")}</div>
+            <div className="foot"><span className="today">{fmtQty(maggotHarvestStats.monthKg)} {t("production.kgThisMonth")}</span></div>
           </div>
           <div style={{ fontSize: ".78rem", color: "var(--db-muted)", marginTop: 8 }}>
             {maggotHarvestStats.count} {t("production.maggotHarvestRecorded")}
@@ -370,7 +370,7 @@ export default function Production() {
             columns={[
               { key: "date", label: t("common.date"), sortable: true, render: (r) => fmtDate(r.date) },
               { key: "biopondLabel", label: t("production.colBiopond") },
-              { key: "quantityKg", label: t("production.colQuantityKg"), sortable: true, render: (r) => fmtNumber(r.quantityKg) },
+              { key: "quantityKg", label: t("production.colQuantityKg"), sortable: true, render: (r) => fmtQty(r.quantityKg) },
               { key: "createdBy", label: t("production.colRecordedBy") },
             ]}
             rows={maggotHarvests}
@@ -596,7 +596,7 @@ export default function Production() {
             </select>
             {occupiedBiopondOptions.length === 0 && <div className="err">{t("maggotForm.noOccupiedBioponds")}</div>}
           </Field>
-          <Field label={t("maggotForm.harvestQuantity")}><input type="number" min={1} placeholder="e.g. 25" value={form.quantityKg || ""} onChange={(e) => setForm({ ...form, quantityKg: e.target.value })} required /></Field>
+          <Field label={t("maggotForm.harvestQuantity")}><input type="number" min={0.01} step="any" placeholder="e.g. 25.5" value={form.quantityKg || ""} onChange={(e) => setForm({ ...form, quantityKg: e.target.value })} required /></Field>
         </form>
       </Modal>
 

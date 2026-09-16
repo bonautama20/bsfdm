@@ -1,5 +1,11 @@
 export const fmtNumber = (n) => new Intl.NumberFormat("en-US").format(Math.round(n));
 
+// Like fmtNumber but keeps up to 2 decimal places instead of rounding to a
+// whole number — for quantities that are legitimately fractional (e.g. a
+// maggot harvest weighed at 2.5kg), where fmtNumber's rounding would silently
+// drop the fraction the user actually entered.
+export const fmtQty = (n) => new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(n);
+
 export const fmtCurrency = (n) =>
   new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n);
 
