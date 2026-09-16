@@ -15,6 +15,10 @@ const FREE_MODULES = new Set(["Production"]);
 // the upgrade prompt, so there's nothing else to keep in sync.
 export const FREE_BIOPOND_LIMIT = 5;
 
+// A free org can create at most this many breeder/source cages (BSF Eggs +
+// Breeder/Parent Stock tabs) — see server/routes/misc.js.
+export const FREE_CAGE_LIMIT = 1;
+
 export function getOrgPlan(orgId) {
   return db.prepare("SELECT plan FROM organizations WHERE id = ?").get(orgId)?.plan || "free";
 }

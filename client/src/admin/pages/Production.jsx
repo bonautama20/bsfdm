@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Bug, Scale, Egg, Users, Sprout, Droplets, Plus, Pencil, Trash2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Bug, Scale, Egg, Users, Sprout, Droplets, Plus, Pencil, Trash2, Lock } from "lucide-react";
 import DataTable from "../../components/ui/DataTable.jsx";
 import Badge from "../../components/ui/Badge.jsx";
 import Modal from "../../components/ui/Modal.jsx";
@@ -21,6 +22,7 @@ const BREEDER_TYPE_KEY = { Prepupa: "breederForm.prepupa", Pupa: "breederForm.pu
 export default function Production() {
   const { t } = useLanguage();
   const { session } = useAuth();
+  const navigate = useNavigate();
   const { allBioponds, totals: biopondTotals, releaseBiopond } = useBiopond();
   // Same shared context the operator forms write through — the field logs
   // below are guaranteed to match exactly what operators submitted, live.
@@ -29,12 +31,19 @@ export default function Production() {
   const [eggs, setEggs] = useState([]);
   const [kasgot, setKasgot] = useState([]);
   const [breederCages, setBreederCages] = useState([]);
+  const [cageEntries, setCageEntries] = useState([]);
 
   useEffect(() => {
     api.get("/egg-batches").then(setEggs).catch(() => {});
     api.get("/kasgot-batches").then(setKasgot).catch(() => {});
     api.get("/breeder-cages").then(setBreederCages).catch(() => {});
+    api.get("/cage-entries").then(setCageEntries).catch(() => {});
   }, []);
+
+  // DataTable has no built-in row-index column, so "No urut" is baked into
+  // each row before handing it off — stable per render, not tied to sorting.
+  const eggsWithNo = useMemo(() => eggs.map((e, i) => ({ ...e, no: i + 1 })), [eggs]);
+  const cageEntriesWithNo = useMemo(() => cageEntries.map((e, i) => ({ ...e, no: i + 1 })), [cageEntries]);
 
   const feedStats = useMemo(() => {
     const today = localISODate();
@@ -106,12 +115,88 @@ export default function Production() {
     return { todayKg, monthlyKg, availableStockKg, soldQtyKg };
   }, [kasgotRecords, kasgot]);
 
-  const [modal, setModal] = useState(null); // 'add-egg' | 'add-kasgot'
+  const [modal, setModal] = useState(null); // 'add-egg' | 'add-kasgot' | 'add-maggot-harvest' | 'add-cage' | 'edit-cage-entry'
   const [form, setForm] = useState({});
   const [editingEggId, setEditingEggId] = useState(null);
   const [deleteEggId, setDeleteEggId] = useState(null);
 
-  const closeModal = () => { setModal(null); setForm({}); setEditingEggId(null); };
+  // ---------- Source cages (Egg Production + Breeder/Parent Stock) ----------
+  const [cageCount, setCageCount] = useState(1);
+  const [cageQuotaLimit, setCageQuotaLimit] = useState(null); // number when the upgrade prompt should be open, else null
+  const [selectedCageId, setSelectedCageId] = useState(null);
+  const [cageEntryForm, setCageEntryForm] = useState({ date: localISODate(), quantityKg: "" });
+  const [editingCageEntryId, setEditingCageEntryId] = useState(null);
+  const [deleteCageEntryId, setDeleteCageEntryId] = useState(null);
+
+  const openAddCage = () => { setCageCount(1); setModal("add-cage"); };
+
+  const handleAddCage = async (e) => {
+    e.preventDefault();
+    setModal(null);
+    try {
+      const created = await api.post("/breeder-cages", { count: Math.max(1, Number(cageCount) || 1) });
+      setBreederCages((prev) => [...prev, ...created]);
+    } catch (err) {
+      if (err.limitReached) setCageQuotaLimit(err.limit);
+      else alert(err.message || t("production.failedAddCage"));
+    }
+  };
+
+  const selectCage = (cageId) => {
+    setSelectedCageId((prev) => (prev === cageId ? null : cageId));
+    setCageEntryForm({ date: localISODate(), quantityKg: "" });
+  };
+
+  const handleAddCageEntry = async (e) => {
+    e.preventDefault();
+    if (!selectedCageId) return;
+    try {
+      const created = await api.post("/cage-entries", {
+        cageId: selectedCageId,
+        date: cageEntryForm.date || localISODate(),
+        quantityKg: Number(cageEntryForm.quantityKg),
+        createdBy: session?.user?.name,
+      });
+      setCageEntries((prev) => [created, ...prev]);
+      setCageEntryForm({ date: localISODate(), quantityKg: "" });
+    } catch (err) {
+      alert(err.message || t("production.failedAddCageEntry"));
+    }
+  };
+
+  const openEditCageEntry = (entry) => {
+    setEditingCageEntryId(entry.id);
+    setForm({ entryDate: entry.date, entryQtyKg: entry.quantityKg });
+    setModal("edit-cage-entry");
+  };
+
+  const handleSaveCageEntry = async (e) => {
+    e.preventDefault();
+    const targetId = editingCageEntryId;
+    closeModal();
+    try {
+      const updated = await api.patch(`/cage-entries/${targetId}`, {
+        date: form.entryDate,
+        quantityKg: Number(form.entryQtyKg),
+      });
+      setCageEntries((prev) => prev.map((entry) => (entry.id === targetId ? updated : entry)));
+    } catch (err) {
+      alert(err.message || t("production.failedEditCageEntry"));
+    }
+  };
+
+  const deleteCageEntry = async () => {
+    const id = deleteCageEntryId;
+    setDeleteCageEntryId(null);
+    try {
+      await api.delete(`/cage-entries/${id}`);
+      setCageEntries((prev) => prev.filter((entry) => entry.id !== id));
+    } catch (err) {
+      alert(err.message || t("production.failedDeleteCageEntry"));
+    }
+  };
+
+  const closeModal = () => { setModal(null); setForm({}); setEditingEggId(null); setEditingCageEntryId(null); };
 
   const openEditEgg = (egg) => {
     setEditingEggId(egg.id);
@@ -298,17 +383,17 @@ export default function Production() {
         <div className="db-card">
           <div className="db-card-head">
             <h3>{t("production.eggProductionTitle")}</h3>
-            <button className="db-btn db-btn-primary db-btn-sm" onClick={() => setModal("add-egg")}><Plus size={14} /> {t("production.addEggProduction")}</button>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button className="db-btn db-btn-outline db-btn-sm" onClick={openAddCage}><Plus size={14} /> {t("production.addSourceCage")}</button>
+              <button className="db-btn db-btn-primary db-btn-sm" onClick={() => setModal("add-egg")}><Plus size={14} /> {t("production.addEggProduction")}</button>
+            </div>
           </div>
           <DataTable
             columns={[
-              { key: "id", label: t("production.colEggBatchId"), sortable: true },
-              { key: "collectionDate", label: t("production.colCollectionDate"), sortable: true, render: (r) => fmtDate(r.collectionDate) },
-              { key: "eggWeightG", label: t("production.colEggWeight"), sortable: true, render: (r) => `${r.eggWeightG} g` },
+              { key: "no", label: t("production.colNo") },
               { key: "sourceCage", label: t("production.colSourceCage"), sortable: true },
-              { key: "estHatchDate", label: t("production.colEstHatch"), render: (r) => fmtDate(r.estHatchDate) },
-              { key: "status", label: t("common.status"), render: (r) => <Badge>{r.status}</Badge> },
-              { key: "createdBy", label: t("production.colRecordedBy"), render: (r) => r.createdBy || "—" },
+              { key: "collectionDate", label: t("production.colEggHarvestDate"), sortable: true, render: (r) => fmtDate(r.collectionDate) },
+              { key: "eggWeightG", label: t("production.colEggHarvestQty"), sortable: true, render: (r) => `${r.eggWeightG} g` },
               {
                 key: "actions", label: "", render: (r) => (
                   <div style={{ display: "flex", gap: 6 }}>
@@ -318,7 +403,7 @@ export default function Production() {
                 )
               },
             ]}
-            rows={eggs}
+            rows={eggsWithNo}
             pageSize={6}
           />
         </div>
@@ -326,19 +411,61 @@ export default function Production() {
 
       {active === "breeder" && (
         <div className="db-card">
-          <div className="db-card-head"><h3>{t("production.breederCagesTitle")}</h3></div>
+          <div className="db-card-head">
+            <h3>{t("production.sourceCagesTitle")}</h3>
+            <button className="db-btn db-btn-primary db-btn-sm" onClick={openAddCage}><Plus size={14} /> {t("production.addSourceCage")}</button>
+          </div>
+          {breederCages.length === 0 ? (
+            <p className="sub">{t("production.noCagesYet")}</p>
+          ) : (
+            <>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {breederCages.map((c) => (
+                  <button
+                    key={c.id}
+                    className={`db-btn db-btn-sm ${selectedCageId === c.id ? "db-btn-primary" : "db-btn-outline"}`}
+                    onClick={() => selectCage(c.id)}
+                  >
+                    {c.id}
+                  </button>
+                ))}
+              </div>
+              {!selectedCageId && <p className="sub" style={{ marginTop: 10 }}>{t("production.selectCageToLog")}</p>}
+              {selectedCageId && (
+                <form onSubmit={handleAddCageEntry} className="db-field-row" style={{ marginTop: 16, alignItems: "end" }}>
+                  <Field label={t("common.date")}>
+                    <input type="date" value={cageEntryForm.date} onChange={(e) => setCageEntryForm({ ...cageEntryForm, date: e.target.value })} required />
+                  </Field>
+                  <Field label={t("production.cageEntryQtyKg")}>
+                    <input type="number" min={0.01} step="any" placeholder="e.g. 2.5" value={cageEntryForm.quantityKg} onChange={(e) => setCageEntryForm({ ...cageEntryForm, quantityKg: e.target.value })} required />
+                  </Field>
+                  <button type="submit" className="db-btn db-btn-primary db-btn-sm">{t("production.addCageEntry")}</button>
+                </form>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {active === "breeder" && (
+        <div className="db-card">
+          <div className="db-card-head"><h3>{t("production.cageEntriesTitle")}</h3></div>
           <DataTable
             columns={[
-              { key: "id", label: t("production.colCageId"), sortable: true },
-              { key: "pupaeEntryDate", label: t("production.colPupaeEntry"), sortable: true, render: (r) => fmtDate(r.pupaeEntryDate) },
-              { key: "pupaeQty", label: t("production.colPupaeQty"), sortable: true, render: (r) => fmtNumber(r.pupaeQty) },
-              { key: "adultEmergence", label: t("production.colAdultEmergence"), sortable: true, render: (r) => fmtNumber(r.adultEmergence) },
-              { key: "eggProductionG", label: t("production.colEggProduction"), render: (r) => `${r.eggProductionG} g` },
-              { key: "cycle", label: t("production.colCycle") },
-              { key: "mortality", label: t("production.colMortality"), sortable: true, render: (r) => `${r.mortality}%` },
-              { key: "status", label: t("common.status"), render: (r) => <Badge>{r.status}</Badge> },
+              { key: "no", label: t("production.colNo") },
+              { key: "cageId", label: t("production.colCageNumber"), sortable: true },
+              { key: "date", label: t("production.colEntryDate"), sortable: true, render: (r) => fmtDate(r.date) },
+              { key: "quantityKg", label: t("production.cageEntryQtyKg"), sortable: true, render: (r) => `${fmtNumber(r.quantityKg)} kg` },
+              {
+                key: "actions", label: "", render: (r) => (
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button className="db-btn db-btn-ghost db-btn-sm" title={t("common.edit")} onClick={() => openEditCageEntry(r)}><Pencil size={13} /></button>
+                    <button className="db-btn db-btn-ghost db-btn-sm" title={t("common.delete")} onClick={() => setDeleteCageEntryId(r.id)}><Trash2 size={13} /></button>
+                  </div>
+                )
+              },
             ]}
-            rows={breederCages}
+            rows={cageEntriesWithNo}
             pageSize={6}
           />
         </div>
@@ -475,6 +602,35 @@ export default function Production() {
 
       <ConfirmDialog open={!!deleteEggId} onClose={() => setDeleteEggId(null)} onConfirm={deleteEgg}
         title={t("production.deleteEggTitle")} message={t("production.deleteEggMessage")} />
+
+      <Modal open={modal === "add-cage"} onClose={closeModal} title={t("production.addSourceCageTitle")}
+        footer={<><button className="db-btn db-btn-outline" onClick={closeModal}>{t("common.cancel")}</button><button className="db-btn db-btn-primary" form="add-cage-form" type="submit">{t("common.save")}</button></>}>
+        <form id="add-cage-form" onSubmit={handleAddCage}>
+          <Field label={t("production.numberOfCages")}><input type="number" min={1} value={cageCount} onChange={(e) => setCageCount(e.target.value)} required /></Field>
+        </form>
+      </Modal>
+
+      <Modal open={modal === "edit-cage-entry"} onClose={closeModal} title={t("production.editCageEntryTitle")}
+        footer={<><button className="db-btn db-btn-outline" onClick={closeModal}>{t("common.cancel")}</button><button className="db-btn db-btn-primary" form="edit-cage-entry-form" type="submit">{t("common.save")}</button></>}>
+        <form id="edit-cage-entry-form" onSubmit={handleSaveCageEntry}>
+          <Field label={t("common.date")}><input type="date" value={form.entryDate || ""} onChange={(e) => setForm({ ...form, entryDate: e.target.value })} required /></Field>
+          <Field label={t("production.cageEntryQtyKg")}><input type="number" min={0.01} step="any" value={form.entryQtyKg ?? ""} onChange={(e) => setForm({ ...form, entryQtyKg: e.target.value })} required /></Field>
+        </form>
+      </Modal>
+
+      <ConfirmDialog open={!!deleteCageEntryId} onClose={() => setDeleteCageEntryId(null)} onConfirm={deleteCageEntry}
+        title={t("production.deleteCageEntryTitle")} message={t("production.deleteCageEntryMessage")} />
+
+      <Modal open={cageQuotaLimit != null} onClose={() => setCageQuotaLimit(null)} title={t("biopond.limitReachedTitle")}
+        footer={<button className="db-btn db-btn-primary" onClick={() => navigate("/dashboard/upgrade")}>{t("plan.viewUpgradeOptions")}</button>}
+      >
+        <div style={{ textAlign: "center", padding: "12px 0" }}>
+          <div style={{ width: 48, height: 48, borderRadius: "50%", background: "var(--db-canvas)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", color: "var(--db-accent)" }}>
+            <Lock size={22} />
+          </div>
+          <p style={{ color: "var(--db-muted)", fontSize: ".9rem", lineHeight: 1.6 }}>{t("production.cageLimitReachedDesc", { limit: cageQuotaLimit })}</p>
+        </div>
+      </Modal>
     </div>
   );
 }

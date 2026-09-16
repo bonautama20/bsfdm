@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { nextId } from "../db.js";
+import { nextId, nowISO } from "../db.js";
 import { requirePermission, requireOperatorOrPermission } from "../middleware/auth.js";
-import { requirePlan } from "../middleware/plan.js";
+import { requirePlan, getOrgPlan, FREE_CAGE_LIMIT } from "../middleware/plan.js";
 
 const router = Router();
 
@@ -175,6 +175,81 @@ router.get("/breeder-cages", (req, res) => {
     id: c.id, pupaeEntryDate: c.pupae_entry_date, pupaeQty: c.pupae_qty, adultEmergence: c.adult_emergence,
     eggProductionG: c.egg_production_g, cycle: c.cycle, status: c.status, mortality: c.mortality,
   })));
+});
+
+// Bulk-creates N source/breeder cages up front (the "Source Cage" button on
+// the BSF Eggs tab, and the cage list on Breeder/Parent Stock) — mirrors
+// racks.js's "add a rack with N bioponds" pattern. A free org is capped at
+// FREE_CAGE_LIMIT total cages; the frontend reads the real limit back from
+// err.limit for the upgrade prompt, same as the biopond quota.
+router.post("/breeder-cages", requirePermission("Production", "create"), (req, res) => {
+  const count = Number(req.body?.count);
+  if (!count || count < 1) return res.status(400).json({ error: "count must be a positive number." });
+
+  if (getOrgPlan(req.auth.orgId) === "free") {
+    const { count: existing } = req.db.prepare("SELECT COUNT(*) AS count FROM breeder_cages").get();
+    if (existing + count > FREE_CAGE_LIMIT) {
+      return res.status(402).json({
+        error: `Free plan is limited to ${FREE_CAGE_LIMIT} source cage total. Upgrade to add more.`,
+        upgradeRequired: true,
+        limitReached: true,
+        limit: FREE_CAGE_LIMIT,
+      });
+    }
+  }
+
+  const created = [];
+  for (let i = 0; i < count; i++) {
+    const id = nextId(req.db, "breeder_cages", "BC");
+    req.db.prepare("INSERT INTO breeder_cages (id, status) VALUES (?, 'Active')").run(id);
+    created.push({ id, pupaeEntryDate: null, pupaeQty: null, adultEmergence: null, eggProductionG: null, cycle: null, status: "Active", mortality: null });
+  }
+  res.status(201).json(created);
+});
+
+// ---------- Cage entries (pupa/prepupa logged into a specific source cage) ----------
+const toCageEntry = (e) => ({
+  id: e.id, cageId: e.cage_id, date: e.date, quantityKg: e.quantity_kg,
+  createdBy: e.created_by, createdAt: e.created_at,
+});
+
+router.get("/cage-entries", (req, res) => {
+  res.json(req.db.prepare("SELECT * FROM cage_entries ORDER BY created_at DESC").all().map(toCageEntry));
+});
+
+router.post("/cage-entries", requirePermission("Production", "create"), (req, res) => {
+  const { cageId, date, quantityKg } = req.body || {};
+  if (!cageId || !date || !quantityKg) {
+    return res.status(400).json({ error: "cageId, date, and quantityKg are required." });
+  }
+  const cage = req.db.prepare("SELECT id FROM breeder_cages WHERE id = ?").get(cageId);
+  if (!cage) return res.status(404).json({ error: "Source cage not found." });
+
+  const id = nextId(req.db, "cage_entries", "CE", 4);
+  req.db.prepare(
+    "INSERT INTO cage_entries (id, cage_id, date, quantity_kg, created_by, created_at) VALUES (?,?,?,?,?,?)"
+  ).run(id, cageId, date, Number(quantityKg), req.body.createdBy || null, nowISO());
+
+  res.status(201).json(toCageEntry(req.db.prepare("SELECT * FROM cage_entries WHERE id = ?").get(id)));
+});
+
+router.patch("/cage-entries/:id", requirePermission("Production", "edit"), (req, res) => {
+  const existing = req.db.prepare("SELECT * FROM cage_entries WHERE id = ?").get(req.params.id);
+  if (!existing) return res.status(404).json({ error: "Cage entry not found." });
+
+  const { date, quantityKg } = req.body || {};
+  req.db.prepare("UPDATE cage_entries SET date = ?, quantity_kg = ? WHERE id = ?").run(
+    date ?? existing.date,
+    quantityKg !== undefined ? Number(quantityKg) : existing.quantity_kg,
+    req.params.id
+  );
+  res.json(toCageEntry(req.db.prepare("SELECT * FROM cage_entries WHERE id = ?").get(req.params.id)));
+});
+
+router.delete("/cage-entries/:id", requirePermission("Production", "delete"), (req, res) => {
+  const result = req.db.prepare("DELETE FROM cage_entries WHERE id = ?").run(req.params.id);
+  if (result.changes === 0) return res.status(404).json({ error: "Cage entry not found." });
+  res.status(204).end();
 });
 
 const toKasgotBatch = (k) => ({

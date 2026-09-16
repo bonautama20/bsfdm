@@ -187,6 +187,20 @@ CREATE TABLE IF NOT EXISTS breeder_cages (
   mortality         REAL
 );
 
+-- Per-cage log of pupa/prepupa entered into a breeder cage over time (Breeder
+-- / Parent Stock tab) — separate from breeder_records (the unattributed
+-- mobile-operator log) because these rows are always tied to one specific
+-- cage from breeder_cages.
+CREATE TABLE IF NOT EXISTS cage_entries (
+  id           TEXT PRIMARY KEY,
+  cage_id      TEXT NOT NULL REFERENCES breeder_cages(id) ON DELETE CASCADE,
+  date         TEXT NOT NULL,
+  quantity_kg  REAL NOT NULL,
+  created_by   TEXT,
+  created_at   TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_cage_entries_cage ON cage_entries(cage_id);
+
 CREATE TABLE IF NOT EXISTS kasgot_batches (
   id                TEXT PRIMARY KEY,
   source_biopond    TEXT,
