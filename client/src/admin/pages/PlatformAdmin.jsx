@@ -6,7 +6,7 @@ import Badge from "../../components/ui/Badge.jsx";
 import ConfirmDialog from "../../components/ui/ConfirmDialog.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useLanguage } from "../../context/LanguageContext.jsx";
-import { fmtDate, fmtNumber } from "../../utils/format.js";
+import { fmtDate, fmtDateTime, fmtNumber } from "../../utils/format.js";
 
 export default function PlatformAdmin() {
   const { t } = useLanguage();
@@ -79,6 +79,7 @@ export default function PlatformAdmin() {
         <div style={{ fontSize: ".78rem", color: "var(--db-muted)" }}>{o.slug}</div>
       </div>
     ) },
+    { key: "ownerEmail", label: t("platform.colEmail"), sortable: true, render: (o) => o.ownerEmail || "—" },
     { key: "plan", label: t("platform.colPlan"), sortable: true, render: (o) => (
       <Badge tone={o.plan === "paid" ? "green" : "gray"}>{o.plan === "paid" ? t("platform.paid") : t("platform.free")}</Badge>
     ) },
@@ -86,7 +87,7 @@ export default function PlatformAdmin() {
       <Badge tone={o.status === "suspended" ? "red" : "green"}>{o.status === "suspended" ? t("platform.suspended") : t("platform.active")}</Badge>
     ) },
     { key: "userCount", label: t("platform.colUsers"), sortable: true, sortValue: (o) => o.userCount },
-    { key: "createdAt", label: t("platform.colCreated"), sortable: true, render: (o) => fmtDate(o.createdAt) },
+    { key: "createdAt", label: t("platform.colCreated"), sortable: true, render: (o) => fmtDateTime(o.createdAt) },
     { key: "pendingUpgradeRequest", label: t("platform.colUpgradeRequest"), render: (o) => (
       o.pendingUpgradeRequest ? (
         <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--db-warning)" }}>

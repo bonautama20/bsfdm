@@ -54,7 +54,7 @@ describe("GET /api/platform/stats", () => {
     const { api: ownerApi } = { api: makeClient(baseUrl) };
     await ownerApi.post("/api/auth/login", SEEDED.superAdmin);
 
-    const { api: customerApi, orgId } = await registerAndLogin("Platform Test Co C");
+    const { api: customerApi, orgId, email } = await registerAndLogin("Platform Test Co C");
     await customerApi.post("/api/billing/upgrade-request", { note: "please upgrade me" });
 
     const res = await ownerApi.get("/api/platform/stats");
@@ -66,6 +66,8 @@ describe("GET /api/platform/stats", () => {
     assert.ok(org, "the newly registered org should appear in the list");
     assert.equal(org.plan, "free");
     assert.equal(org.userCount, 1);
+    assert.equal(org.ownerEmail, email);
+    assert.ok(org.createdAt, "createdAt should be a full timestamp the frontend can show a time for");
     assert.equal(org.pendingUpgradeRequest.note, "please upgrade me");
   });
 });

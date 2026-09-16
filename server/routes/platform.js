@@ -19,6 +19,7 @@ const toOrgSummary = (o) => ({
   status: o.status,
   createdAt: o.created_at,
   userCount: o.user_count,
+  ownerEmail: o.owner_email,
   pendingUpgradeRequest: o.request_id
     ? { id: o.request_id, note: o.request_note, createdAt: o.request_created_at }
     : null,
@@ -38,6 +39,7 @@ router.get("/stats", (req, res) => {
     SELECT
       o.*,
       (SELECT COUNT(*) FROM users u WHERE u.org_id = o.id) AS user_count,
+      (SELECT email FROM users u2 WHERE u2.org_id = o.id ORDER BY u2.rowid ASC LIMIT 1) AS owner_email,
       ur.id AS request_id, ur.note AS request_note, ur.created_at AS request_created_at
     FROM organizations o
     LEFT JOIN upgrade_requests ur ON ur.org_id = o.id AND ur.status = 'pending'
