@@ -5,6 +5,7 @@ import { Mail, Lock, Eye, EyeOff, ArrowLeft, LogIn } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useLanguage } from "../context/LanguageContext.jsx";
 import LanguageToggle from "../components/ui/LanguageToggle.jsx";
+import logoWhite from "../assets/logo-white-footer.png";
 
 const prefersReducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -96,7 +97,7 @@ export default function LoginPage() {
         .login .brand{background:#01613C; color:#fff; position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; padding:48px;}
         .login .brand-hex{position:absolute; inset:0; opacity:.12; pointer-events:none;}
         .login .brand-top{display:flex; align-items:center; gap:10px; font-family:'Manrope', sans-serif; font-weight:800; font-size:1.2rem; position:relative; z-index:1;}
-        .login .brand-mark{width:34px; height:34px; flex-shrink:0;}
+        .login .brand-logo-img{height:36px; width:auto; display:block;}
         .login .brand-mid{position:relative; z-index:1; max-width:420px;}
         .login .brand-mid .eyebrow{display:inline-flex; align-items:center; gap:8px; font-family:'Manrope', sans-serif; font-weight:700; font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; background:rgba(255,255,255,.14); padding:7px 14px; border-radius:99px;}
         .login .brand-mid h2{margin-top:18px; font-size:clamp(1.6rem,2.6vw,2.1rem); line-height:1.2;}
@@ -149,10 +150,7 @@ export default function LoginPage() {
           <polygon points="380,40 420,63 420,109 380,132 340,109 340,63" fill="#fff" />
         </svg>
         <a href="/" className="brand-top" onClick={(e) => { e.preventDefault(); navigate("/"); }}>
-          <svg className="brand-mark" viewBox="0 0 40 40" fill="none">
-            <polygon points="20,3 34.6,11.5 34.6,28.5 20,37 5.4,28.5 5.4,11.5" fill="#fff" />
-          </svg>
-          BSFDM
+          <img src={logoWhite} alt="BSFDM" className="brand-logo-img" />
         </a>
         <div className="brand-mid">
           <span className="eyebrow">{t("login.eyebrow")}</span>
