@@ -207,6 +207,16 @@ router.post("/breeder-cages", requirePermission("Production", "create"), (req, r
   res.status(201).json(created);
 });
 
+// Deleting a cage cascades to its cage_entries (schema-tenant.sql's ON DELETE
+// CASCADE); egg_batches.source_cage is a plain text snapshot, not a foreign
+// key, so past egg batches keep showing the deleted cage's id rather than
+// breaking.
+router.delete("/breeder-cages/:id", requirePermission("Production", "delete"), (req, res) => {
+  const result = req.db.prepare("DELETE FROM breeder_cages WHERE id = ?").run(req.params.id);
+  if (result.changes === 0) return res.status(404).json({ error: "Source cage not found." });
+  res.status(204).end();
+});
+
 // ---------- Cage entries (pupa/prepupa logged into a specific source cage) ----------
 const toCageEntry = (e) => ({
   id: e.id, cageId: e.cage_id, date: e.date, quantityKg: e.quantity_kg,

@@ -69,6 +69,36 @@ describe("POST /api/breeder-cages (bulk create)", () => {
   });
 });
 
+describe("DELETE /api/breeder-cages/:id", () => {
+  test("deletes the cage and cascades to its cage_entries", async () => {
+    const cage = await api.post("/api/breeder-cages", { count: 1 });
+    const cageId = cage.body[0].id;
+    const entry = await api.post("/api/cage-entries", { cageId, date: "2026-01-10", quantityKg: 3 });
+    assert.equal(entry.status, 201);
+
+    const del = await api.delete(`/api/breeder-cages/${cageId}`);
+    assert.equal(del.status, 204);
+
+    const cages = await api.get("/api/breeder-cages");
+    assert.ok(!cages.body.some((c) => c.id === cageId));
+
+    const entries = await api.get("/api/cage-entries");
+    assert.ok(!entries.body.some((e) => e.id === entry.body.id), "the cage's entries should be gone too");
+  });
+
+  test("deleting an unknown cage id is a 404", async () => {
+    const res = await api.delete("/api/breeder-cages/BC-DOES-NOT-EXIST");
+    assert.equal(res.status, 404);
+  });
+
+  test("a free org's own cage delete still works within its own tenant", async () => {
+    const freeApi = await registerFreeOrg();
+    const cage = await freeApi.post("/api/breeder-cages", { count: 1 });
+    const del = await freeApi.delete(`/api/breeder-cages/${cage.body[0].id}`);
+    assert.equal(del.status, 204);
+  });
+});
+
 describe("cage_entries CRUD", () => {
   test("logging pupa/prepupa entries into a cage, editing, and deleting one", async () => {
     const cage = await api.post("/api/breeder-cages", { count: 1 });

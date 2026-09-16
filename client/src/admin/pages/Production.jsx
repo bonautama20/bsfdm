@@ -127,6 +127,7 @@ export default function Production() {
   const [cageEntryForm, setCageEntryForm] = useState({ date: localISODate(), quantityKg: "" });
   const [editingCageEntryId, setEditingCageEntryId] = useState(null);
   const [deleteCageEntryId, setDeleteCageEntryId] = useState(null);
+  const [deleteCageId, setDeleteCageId] = useState(null);
 
   const openAddCage = () => { setCageCount(1); setModal("add-cage"); };
 
@@ -139,6 +140,19 @@ export default function Production() {
     } catch (err) {
       if (err.limitReached) setCageQuotaLimit(err.limit);
       else alert(err.message || t("production.failedAddCage"));
+    }
+  };
+
+  const deleteCage = async () => {
+    const id = deleteCageId;
+    setDeleteCageId(null);
+    try {
+      await api.delete(`/breeder-cages/${id}`);
+      setBreederCages((prev) => prev.filter((c) => c.id !== id));
+      setCageEntries((prev) => prev.filter((e) => e.cageId !== id));
+      if (selectedCageId === id) setSelectedCageId(null);
+    } catch (err) {
+      alert(err.message || t("production.failedDeleteCage"));
     }
   };
 
@@ -421,13 +435,25 @@ export default function Production() {
             <>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {breederCages.map((c) => (
-                  <button
+                  <div
                     key={c.id}
                     className={`db-btn db-btn-sm ${selectedCageId === c.id ? "db-btn-primary" : "db-btn-outline"}`}
-                    onClick={() => selectCage(c.id)}
+                    style={{ padding: "0 0 0 12px", gap: 2 }}
                   >
-                    {c.id}
-                  </button>
+                    <button
+                      onClick={() => selectCage(c.id)}
+                      style={{ background: "none", border: "none", color: "inherit", font: "inherit", cursor: "pointer", padding: "7px 4px" }}
+                    >
+                      {c.id}
+                    </button>
+                    <button
+                      onClick={() => setDeleteCageId(c.id)}
+                      title={t("common.delete")}
+                      style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", display: "flex", padding: "7px 10px", opacity: .75 }}
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
                 ))}
               </div>
               {!selectedCageId && <p className="sub" style={{ marginTop: 10 }}>{t("production.selectCageToLog")}</p>}
@@ -602,6 +628,9 @@ export default function Production() {
 
       <ConfirmDialog open={!!deleteEggId} onClose={() => setDeleteEggId(null)} onConfirm={deleteEgg}
         title={t("production.deleteEggTitle")} message={t("production.deleteEggMessage")} />
+
+      <ConfirmDialog open={!!deleteCageId} onClose={() => setDeleteCageId(null)} onConfirm={deleteCage}
+        title={t("production.deleteCageTitle")} message={t("production.deleteCageMessage")} />
 
       <Modal open={modal === "add-cage"} onClose={closeModal} title={t("production.addSourceCageTitle")}
         footer={<><button className="db-btn db-btn-outline" onClick={closeModal}>{t("common.cancel")}</button><button className="db-btn db-btn-primary" form="add-cage-form" type="submit">{t("common.save")}</button></>}>
