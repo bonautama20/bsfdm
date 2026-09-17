@@ -18,10 +18,12 @@ export const SALES_TYPE_KEY = {
   "Pupa": "salesForm.typePupa",
   "Kasgot": "salesForm.typeKasgot",
 };
-// Every sales type is priced/weighed in kg except Egg, which (like BSF Eggs
-// production elsewhere in the app) is tracked in grams — this is display-only,
-// the server derives and trusts its own copy independently.
-export const unitForSalesType = (salesType) => (salesType === "Egg" ? "gram" : "kg");
+// Every sales type is priced/weighed in kg except Egg and Baby Maggot, which
+// (like their production-side counterparts elsewhere in the app) are tracked
+// in grams — this is display-only, the server derives and trusts its own
+// copy independently.
+const GRAM_SALES_TYPES = new Set(["Egg", "Baby Maggot"]);
+export const unitForSalesType = (salesType) => (GRAM_SALES_TYPES.has(salesType) ? "gram" : "kg");
 
 const emptyForm = { date: localISODate(), salesType: "", quantity: "", totalPrice: "", buyerName: "", buyerPhone: "" };
 

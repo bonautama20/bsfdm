@@ -6,6 +6,7 @@ import { useBiopond, localISODate } from "../../context/BiopondContext.jsx";
 import { useProductionLog } from "../../context/ProductionLogContext.jsx";
 import { useLanguage } from "../../context/LanguageContext.jsx";
 import { fmtDate } from "../../utils/format.js";
+import logoWhite from "../../assets/logo-white-footer.png";
 
 const initials = (name = "") => name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
 
@@ -54,10 +55,7 @@ export default function OperatorHome() {
       <header className="op-header">
         <div className="op-header-top">
           <div className="op-header-brand">
-            <svg width="24" height="24" viewBox="0 0 40 40" fill="none">
-              <polygon points="20,3 34.6,11.5 34.6,28.5 20,37 5.4,28.5 5.4,11.5" fill="#E36B14" />
-            </svg>
-            BSFDM
+            <img src={logoWhite} alt="BSFDM" style={{ height: 26, width: "auto", display: "block" }} />
           </div>
           <div className="op-header-actions">
             <button className="op-icon-btn" aria-label={t("operatorNav.notifications")} onClick={() => navigate("/operator/notifications")}>

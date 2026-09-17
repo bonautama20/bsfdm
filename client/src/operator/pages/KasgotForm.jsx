@@ -74,7 +74,7 @@ export default function KasgotForm() {
           <div className={`op-field ${errors.quantityKg ? "has-err" : ""}`}>
             <label>{t("kasgotForm.kasgotQuantity")}</label>
             <div className="op-input-unit">
-              <input type="number" min={1} placeholder="e.g. 45" value={form.quantityKg} onChange={(e) => setForm({ ...form, quantityKg: e.target.value })} />
+              <input type="number" min={0.01} step="any" placeholder="e.g. 45.5" value={form.quantityKg} onChange={(e) => setForm({ ...form, quantityKg: e.target.value })} />
               <span className="unit-suffix">kg</span>
             </div>
             {errors.quantityKg && <div className="err">{errors.quantityKg}</div>}

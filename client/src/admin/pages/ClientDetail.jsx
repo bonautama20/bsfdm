@@ -6,7 +6,7 @@ import Badge from "../../components/ui/Badge.jsx";
 import DataTable from "../../components/ui/DataTable.jsx";
 import { api } from "../../api/client.js";
 import { useLanguage } from "../../context/LanguageContext.jsx";
-import { fmtNumber, fmtDate } from "../../utils/format.js";
+import { fmtQty, fmtDate } from "../../utils/format.js";
 
 export default function ClientDetail() {
   const { clientId } = useParams();
@@ -82,9 +82,9 @@ export default function ClientDetail() {
       </div>
 
       <div className="db-row db-grid-3">
-        <div className="db-card"><div className="db-kpi"><div className="label">{t("clientDetail.dailyAverage")}</div><div className="value">{fmtNumber(hotel.avgDailyWasteKg)} kg</div></div></div>
-        <div className="db-card"><div className="db-kpi"><div className="label">{t("clientDetail.monthlyEstimate")}</div><div className="value">{fmtNumber(monthlyTotal)} kg</div></div></div>
-        <div className="db-card"><div className="db-kpi"><div className="label">{t("clientDetail.annualEstimate")}</div><div className="value">{fmtNumber(annualEstimate)} kg</div></div></div>
+        <div className="db-card"><div className="db-kpi"><div className="label">{t("clientDetail.dailyAverage")}</div><div className="value">{fmtQty(hotel.avgDailyWasteKg)} kg</div></div></div>
+        <div className="db-card"><div className="db-kpi"><div className="label">{t("clientDetail.monthlyEstimate")}</div><div className="value">{fmtQty(monthlyTotal)} kg</div></div></div>
+        <div className="db-card"><div className="db-kpi"><div className="label">{t("clientDetail.annualEstimate")}</div><div className="value">{fmtQty(annualEstimate)} kg</div></div></div>
       </div>
 
       <div className="db-row">
@@ -114,7 +114,7 @@ export default function ClientDetail() {
           <DataTable
             columns={[
               { key: "date", label: t("clientDetail.colDate"), sortable: true, render: (r) => fmtDate(r.date) },
-              { key: "quantityKg", label: t("clientDetail.colQuantity"), sortable: true, render: (r) => `${fmtNumber(r.quantityKg)} kg` },
+              { key: "quantityKg", label: t("clientDetail.colQuantity"), sortable: true, render: (r) => `${fmtQty(r.quantityKg)} kg` },
               { key: "category", label: t("clientDetail.colCategory") },
               { key: "vehicle", label: t("clientDetail.colVehicle") },
               { key: "driver", label: t("clientDetail.colDriver") },

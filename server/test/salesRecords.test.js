@@ -41,6 +41,15 @@ describe("POST /api/sales-records", () => {
     assert.equal(res.body.unit, "gram");
   });
 
+  test("Baby Maggot also forces unit=gram", async () => {
+    const res = await api.post("/api/sales-records", {
+      date: "2026-02-02", salesType: "Baby Maggot", quantity: 250, totalPrice: 50000,
+      buyerName: "Joko", buyerPhone: "081211112222",
+    });
+    assert.equal(res.status, 201);
+    assert.equal(res.body.unit, "gram");
+  });
+
   test("rejects an unknown sales type", async () => {
     const res = await api.post("/api/sales-records", {
       date: "2026-02-01", salesType: "Not A Real Type", quantity: 1, totalPrice: 1,

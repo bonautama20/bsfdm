@@ -327,8 +327,8 @@ export default function Production() {
           <div className="db-kpi">
             <div className="ic-wrap"><Egg size={20} /></div>
             <div className="label">{t("production.bsfEggs")}</div>
-            <div className="value">{fmtNumber(eggStats.todayKg)} {t("production.kgToday")}</div>
-            <div className="foot"><span className="today">{fmtNumber(eggStats.monthlyKg)} {t("production.kgThisMonth")}</span></div>
+            <div className="value">{fmtQty(eggStats.todayKg)} {t("production.kgToday")}</div>
+            <div className="foot"><span className="today">{fmtQty(eggStats.monthlyKg)} {t("production.kgThisMonth")}</span></div>
           </div>
           <div style={{ fontSize: ".78rem", color: "var(--db-muted)", marginTop: 8 }}>
             {eggStats.collectionUnits} {t("production.collectionUnits")} · {t("production.avgYield")} {eggStats.avgYieldG}g · {t("production.next")} {eggStats.nextHarvestDate ? fmtDate(eggStats.nextHarvestDate) : "—"}
@@ -351,11 +351,11 @@ export default function Production() {
           <div className="db-kpi">
             <div className="ic-wrap"><Sprout size={20} /></div>
             <div className="label">{t("production.kasgotFertilizer")}</div>
-            <div className="value">{fmtNumber(kasgotStats.todayKg)} {t("production.kgToday")}</div>
-            <div className="foot"><span className="today">{fmtNumber(kasgotStats.monthlyKg)} {t("production.kgThisMonth")}</span></div>
+            <div className="value">{fmtQty(kasgotStats.todayKg)} {t("production.kgToday")}</div>
+            <div className="foot"><span className="today">{fmtQty(kasgotStats.monthlyKg)} {t("production.kgThisMonth")}</span></div>
           </div>
           <div style={{ fontSize: ".78rem", color: "var(--db-muted)", marginTop: 8 }}>
-            {t("production.stock")} {fmtNumber(kasgotStats.availableStockKg)} kg · {t("production.sold")} {fmtNumber(kasgotStats.soldQtyKg)} kg
+            {t("production.stock")} {fmtQty(kasgotStats.availableStockKg)} kg · {t("production.sold")} {fmtQty(kasgotStats.soldQtyKg)} kg
           </div>
         </div>
 
@@ -363,8 +363,8 @@ export default function Production() {
           <div className="db-kpi">
             <div className="ic-wrap"><Droplets size={20} /></div>
             <div className="label">{t("production.feed")}</div>
-            <div className="value">{fmtNumber(feedStats.todayKg)} {t("production.kgToday")}</div>
-            <div className="foot"><span className="today">{fmtNumber(feedStats.monthKg)} {t("production.kgThisMonth")}</span></div>
+            <div className="value">{fmtQty(feedStats.todayKg)} {t("production.kgToday")}</div>
+            <div className="foot"><span className="today">{fmtQty(feedStats.monthKg)} {t("production.kgThisMonth")}</span></div>
           </div>
           <div style={{ fontSize: ".78rem", color: "var(--db-muted)", marginTop: 8 }}>
             {feedStats.count} {t("production.feedReceived").toLowerCase()}
@@ -481,7 +481,7 @@ export default function Production() {
               { key: "no", label: t("production.colNo") },
               { key: "cageId", label: t("production.colCageNumber"), sortable: true },
               { key: "date", label: t("production.colEntryDate"), sortable: true, render: (r) => fmtDate(r.date) },
-              { key: "quantityKg", label: t("production.cageEntryQtyKg"), sortable: true, render: (r) => `${fmtNumber(r.quantityKg)} kg` },
+              { key: "quantityKg", label: t("production.cageEntryQtyKg"), sortable: true, render: (r) => `${fmtQty(r.quantityKg)} kg` },
               {
                 key: "actions", label: "", render: (r) => (
                   <div style={{ display: "flex", gap: 6 }}>
@@ -504,7 +504,7 @@ export default function Production() {
             columns={[
               { key: "type", label: t("production.colType"), render: (r) => BREEDER_TYPE_KEY[r.type] ? t(BREEDER_TYPE_KEY[r.type]) : r.type },
               { key: "date", label: t("common.date"), sortable: true, render: (r) => fmtDate(r.date) },
-              { key: "quantity", label: t("breederForm.quantity"), sortable: true, render: (r) => `${fmtNumber(r.quantity)} ${r.unit}` },
+              { key: "quantity", label: t("breederForm.quantity"), sortable: true, render: (r) => `${fmtQty(r.quantity)} ${r.unit}` },
               { key: "createdBy", label: t("production.colRecordedBy") },
             ]}
             rows={breederRecords}
@@ -524,10 +524,10 @@ export default function Production() {
               { key: "id", label: t("production.colBatchId"), sortable: true },
               { key: "sourceBiopond", label: t("production.colSourceBiopond"), sortable: true },
               { key: "processingDate", label: t("production.colProcessingDate"), sortable: true, render: (r) => fmtDate(r.processingDate) },
-              { key: "rawWeightKg", label: t("production.colRawWeight"), render: (r) => `${fmtNumber(r.rawWeightKg)} kg` },
-              { key: "driedWeightKg", label: t("production.colFinalWeight"), render: (r) => `${fmtNumber(r.driedWeightKg)} kg` },
+              { key: "rawWeightKg", label: t("production.colRawWeight"), render: (r) => `${fmtQty(r.rawWeightKg)} kg` },
+              { key: "driedWeightKg", label: t("production.colFinalWeight"), render: (r) => `${fmtQty(r.driedWeightKg)} kg` },
               { key: "packaging", label: t("production.colPackaging") },
-              { key: "stock", label: t("production.colStock"), sortable: true, render: (r) => `${fmtNumber(r.stock)} kg` },
+              { key: "stock", label: t("production.colStock"), sortable: true, render: (r) => `${fmtQty(r.stock)} kg` },
               { key: "salesStatus", label: t("production.colSalesStatus"), render: (r) => <Badge>{r.salesStatus}</Badge> },
             ]}
             rows={kasgot}
@@ -543,7 +543,7 @@ export default function Production() {
             columns={[
               { key: "date", label: t("common.date"), sortable: true, render: (r) => fmtDate(r.date) },
               { key: "biopondLabel", label: t("production.colBiopond") },
-              { key: "quantityKg", label: t("production.colQuantityKg"), sortable: true, render: (r) => fmtNumber(r.quantityKg) },
+              { key: "quantityKg", label: t("production.colQuantityKg"), sortable: true, render: (r) => fmtQty(r.quantityKg) },
               { key: "createdBy", label: t("production.colRecordedBy") },
             ]}
             rows={kasgotRecords}
@@ -562,7 +562,7 @@ export default function Production() {
             columns={[
               { key: "date", label: t("common.date"), sortable: true, render: (r) => fmtDate(r.date) },
               { key: "clientName", label: t("production.colHotel"), sortable: true },
-              { key: "quantityKg", label: t("production.colQuantityKg"), sortable: true, render: (r) => fmtNumber(r.quantityKg) },
+              { key: "quantityKg", label: t("production.colQuantityKg"), sortable: true, render: (r) => fmtQty(r.quantityKg) },
               { key: "createdBy", label: t("production.colRecordedBy") },
             ]}
             rows={feedRecords}
@@ -599,8 +599,8 @@ export default function Production() {
             <Field label={t("production.modalProcessingDate")}><input type="date" value={form.date || ""} onChange={(e) => setForm({ ...form, date: e.target.value })} required /></Field>
           </div>
           <div className="db-field-row">
-            <Field label={t("production.modalRawWeight")}><input type="number" placeholder="800" value={form.rawWeight || ""} onChange={(e) => setForm({ ...form, rawWeight: e.target.value })} required /></Field>
-            <Field label={t("production.modalFinalWeight")}><input type="number" placeholder="560" value={form.driedWeight || ""} onChange={(e) => setForm({ ...form, driedWeight: e.target.value })} required /></Field>
+            <Field label={t("production.modalRawWeight")}><input type="number" min={0.01} step="any" placeholder="800" value={form.rawWeight || ""} onChange={(e) => setForm({ ...form, rawWeight: e.target.value })} required /></Field>
+            <Field label={t("production.modalFinalWeight")}><input type="number" min={0.01} step="any" placeholder="560" value={form.driedWeight || ""} onChange={(e) => setForm({ ...form, driedWeight: e.target.value })} required /></Field>
           </div>
           <Field label={t("production.modalPackaging")}>
             <select className="db-select" style={{ width: "100%" }} value={form.packaging || "25kg Sack"} onChange={(e) => setForm({ ...form, packaging: e.target.value })}>

@@ -73,7 +73,7 @@ export default function BreederForm() {
           <div className={`op-field ${errors.quantity ? "has-err" : ""}`}>
             <label>{t("breederForm.quantity")}</label>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 110px", gap: 10 }}>
-              <input type="number" min={1} placeholder={t("breederForm.quantity")} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} />
+              <input type="number" min={0.01} step="any" placeholder={t("breederForm.quantity")} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} />
               <select value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })}>
                 <option value="kg">kg</option>
                 <option value="gram">gram</option>

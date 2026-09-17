@@ -7,7 +7,7 @@ import ConfirmDialog from "../../components/ui/ConfirmDialog.jsx";
 import { EmptyState } from "../../components/ui/EmptyState.jsx";
 import { api } from "../../api/client.js";
 import { useLanguage } from "../../context/LanguageContext.jsx";
-import { fmtNumber, fmtDate } from "../../utils/format.js";
+import { fmtQty, fmtDate } from "../../utils/format.js";
 
 const STATUS_OPTIONS = ["All", "Active", "Contract Expiring", "Inactive"];
 
@@ -132,8 +132,8 @@ export default function Clients() {
               </div>
 
               <div className="db-metric-row" style={{ marginTop: 14, paddingTop: 14 }}>
-                <div className="m"><div className="v">{fmtNumber(h.monthlyWasteKg)} kg</div><div className="l">{t("clients.thisMonth")}</div></div>
-                <div className="m"><div className="v">{fmtNumber(h.avgDailyWasteKg)} kg</div><div className="l">{t("clients.avgDaily")}</div></div>
+                <div className="m"><div className="v">{fmtQty(h.monthlyWasteKg)} kg</div><div className="l">{t("clients.thisMonth")}</div></div>
+                <div className="m"><div className="v">{fmtQty(h.avgDailyWasteKg)} kg</div><div className="l">{t("clients.avgDaily")}</div></div>
                 <div className="m"><div className="v">{h.lastCollection === "—" ? "—" : fmtDate(h.lastCollection)}</div><div className="l">{t("clients.lastCollection")}</div></div>
               </div>
               <div style={{ fontSize: ".76rem", color: "var(--db-muted)", marginTop: 10 }}>

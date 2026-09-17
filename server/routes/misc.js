@@ -39,7 +39,8 @@ router.post("/sales-transactions", requirePlan("Report"), requirePermission("Rep
 // comment on sales_records for how this differs from sales_transactions
 // above) ----------
 const SALES_TYPES = ["Fresh Maggot", "Baby Maggot", "Egg", "Prepupa", "Pupa", "Kasgot"];
-const unitForSalesType = (salesType) => (salesType === "Egg" ? "gram" : "kg");
+const GRAM_SALES_TYPES = new Set(["Egg", "Baby Maggot"]);
+const unitForSalesType = (salesType) => (GRAM_SALES_TYPES.has(salesType) ? "gram" : "kg");
 
 const toSalesRecord = (r) => ({
   id: r.id, date: r.date, salesType: r.sales_type, quantity: r.quantity, unit: r.unit,

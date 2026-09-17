@@ -301,7 +301,7 @@ export default function BiopondBoard() {
             </div>
             <div className="db-field">
               <label>{t("biopond.feedInAmount")}</label>
-              <input type="number" min={0} placeholder="80" value={formData.feedInKg} onChange={(e) => setFormData({ ...formData, feedInKg: e.target.value })} required />
+              <input type="number" min={0.01} step="any" placeholder="80" value={formData.feedInKg} onChange={(e) => setFormData({ ...formData, feedInKg: e.target.value })} required />
             </div>
           </div>
           <div className="db-field">

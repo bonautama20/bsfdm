@@ -127,7 +127,7 @@ export default function Reports() {
       columns: [
         { key: "date", label: t("common.date"), fmt: (r) => fmtDate(r.date) },
         { key: "biopondLabel", label: t("production.colBiopond"), fmt: (r) => r.biopondLabel || "—" },
-        { key: "quantityKg", label: t("production.colQuantityKg"), fmt: (r) => fmtNumber(r.quantityKg) },
+        { key: "quantityKg", label: t("production.colQuantityKg"), fmt: (r) => fmtQty(r.quantityKg) },
         { key: "createdBy", label: t("production.colRecordedBy"), fmt: (r) => r.createdBy || "—" },
       ],
     },
@@ -137,7 +137,7 @@ export default function Reports() {
       columns: [
         { key: "date", label: t("common.date"), fmt: (r) => fmtDate(r.date) },
         { key: "clientName", label: t("production.colHotel"), fmt: (r) => r.clientName || "—" },
-        { key: "quantityKg", label: t("production.colQuantityKg"), fmt: (r) => fmtNumber(r.quantityKg) },
+        { key: "quantityKg", label: t("production.colQuantityKg"), fmt: (r) => fmtQty(r.quantityKg) },
         { key: "createdBy", label: t("production.colRecordedBy"), fmt: (r) => r.createdBy || "—" },
       ],
     },
@@ -238,8 +238,8 @@ export default function Reports() {
               <DataTable
                 columns={[
                   { key: "id", label: t("reports.colBatch"), sortable: true },
-                  { key: "estHarvestKg", label: t("reports.colEst"), render: (r) => `${fmtNumber(r.estHarvestKg)} kg` },
-                  { key: "actualHarvestKg", label: t("reports.colActual"), render: (r) => r.actualHarvestKg ? `${fmtNumber(r.actualHarvestKg)} kg` : "—" },
+                  { key: "estHarvestKg", label: t("reports.colEst"), render: (r) => `${fmtQty(r.estHarvestKg)} kg` },
+                  { key: "actualHarvestKg", label: t("reports.colActual"), render: (r) => r.actualHarvestKg ? `${fmtQty(r.actualHarvestKg)} kg` : "—" },
                   { key: "mortality", label: t("reports.colMortality"), sortable: true, render: (r) => `${r.mortality}%` },
                   { key: "status", label: t("common.status"), render: (r) => <Badge>{r.status}</Badge> },
                 ]}

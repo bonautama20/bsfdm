@@ -122,7 +122,7 @@ export default function BiopondForm() {
           <div className={`op-field ${errors.feedInKg ? "has-err" : ""}`}>
             <label>{t("biopondForm.feedAmount")}</label>
             <div className="op-input-unit">
-              <input type="number" min={1} placeholder="e.g. 120" value={form.feedInKg} onChange={(e) => setForm({ ...form, feedInKg: e.target.value })} />
+              <input type="number" min={0.01} step="any" placeholder="e.g. 120.5" value={form.feedInKg} onChange={(e) => setForm({ ...form, feedInKg: e.target.value })} />
               <span className="unit-suffix">kg</span>
             </div>
             {errors.feedInKg && <div className="err">{errors.feedInKg}</div>}

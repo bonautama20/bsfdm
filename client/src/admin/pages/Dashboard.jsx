@@ -17,7 +17,7 @@ import { useBiopond, localISODate } from "../../context/BiopondContext.jsx";
 import { api } from "../../api/client.js";
 import { useLanguage } from "../../context/LanguageContext.jsx";
 import { kpiSummary, monthlySales, recentActivity, eventColors } from "../../data/dummyData.js";
-import { fmtNumber, fmtCurrency, fmtDate, fmtDateTime } from "../../utils/format.js";
+import { fmtNumber, fmtQty, fmtCurrency, fmtDate, fmtDateTime } from "../../utils/format.js";
 
 const FILTERS = [
   { value: "today", key: "dashboard.filter.today" },
@@ -253,8 +253,8 @@ export default function Dashboard() {
                 {hotels.map((h) => (
                   <tr key={h.id}>
                     <td>{h.name}</td>
-                    <td>{fmtNumber(h.monthlyWasteKg)} kg</td>
-                    <td>{fmtNumber(h.avgDailyWasteKg)} kg</td>
+                    <td>{fmtQty(h.monthlyWasteKg)} kg</td>
+                    <td>{fmtQty(h.avgDailyWasteKg)} kg</td>
                     <td>{((h.monthlyWasteKg / totalMonthlyWaste) * 100).toFixed(1)}%</td>
                   </tr>
                 ))}
