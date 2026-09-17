@@ -1,9 +1,11 @@
-// Full legal text for the Privacy Policy modal (Landing.jsx footer). Kept in
-// its own data file since it's long and static — structured as sections of
-// typed blocks (paragraph / bullet list / role definition list) so the modal
-// can render it generically instead of one huge hand-written JSX tree.
-export const PRIVACY_POLICY = {
+// Full legal text for the Privacy Policy modal (Landing.jsx footer), in both
+// site languages. Kept in its own data file since it's long and static —
+// structured as sections of typed blocks (paragraph / bullet list / role
+// definition list / address) so the modal can render either language
+// generically instead of one huge hand-written JSX tree per language.
+const en = {
   title: "Privacy Policy",
+  lastUpdatedLabel: "Last Updated",
   lastUpdated: "September 16, 2026",
   intro: [
     "BSFDM (“BSFDM”, “we”, “us”, or “our”) respects the privacy of every user who accesses and uses the BSFDM platform.",
@@ -409,3 +411,414 @@ export const PRIVACY_POLICY = {
     },
   ],
 };
+
+const id = {
+  title: "Kebijakan Privasi",
+  lastUpdatedLabel: "Terakhir Diperbarui",
+  lastUpdated: "16 September 2026",
+  intro: [
+    "BSFDM (“BSFDM”, “kami”) menghormati privasi setiap pengguna yang mengakses dan menggunakan platform BSFDM.",
+    "BSFDM adalah platform digital yang dirancang untuk membantu pengelolaan sampah dan operasional produksi Black Soldier Fly (BSF), termasuk pemantauan produksi, manajemen biopond, manajemen pakan, pengolahan sampah organik, panen, inventaris, klien, pelaporan, penjadwalan, notifikasi, dan aktivitas operasional terkait lainnya.",
+    "Kebijakan Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, menyimpan, melindungi, dan mengelola informasi ketika Anda mengakses atau menggunakan bsfdm.id, aplikasi BSFDM, dan layanan terkait.",
+    "Dengan membuat akun atau menggunakan BSFDM, Anda mengakui bahwa Anda telah membaca dan memahami Kebijakan Privasi ini.",
+  ],
+  sections: [
+    {
+      number: "1",
+      title: "Ruang Lingkup Kebijakan Privasi Ini",
+      blocks: [
+        { type: "p", text: "Kebijakan Privasi ini berlaku untuk informasi yang diproses melalui:" },
+        { type: "ul", items: [
+          "situs web BSFDM",
+          "aplikasi web BSFDM",
+          "antarmuka seluler atau tablet yang terhubung ke BSFDM",
+          "dasbor administrator dan operator",
+          "API BSFDM",
+          "integrasi dengan layanan pihak ketiga",
+          "sistem notifikasi",
+          "layanan digital lain yang dioperasikan sebagai bagian dari ekosistem BSFDM",
+        ] },
+        { type: "p", text: "Kebijakan ini berlaku untuk Administrator, Super Administrator, Operator, pengguna Management, Klien, dan pengguna resmi lainnya dari platform ini." },
+      ],
+    },
+    {
+      number: "2",
+      title: "Informasi yang Kami Kumpulkan",
+      blocks: [
+        { type: "p", text: "Tergantung pada bagaimana Anda menggunakan BSFDM, kami dapat mengumpulkan beberapa kategori informasi." },
+      ],
+    },
+    {
+      number: "2.1",
+      title: "Informasi Akun",
+      sub: true,
+      blocks: [
+        { type: "p", text: "Saat akun dibuat, kami dapat memproses informasi seperti:" },
+        { type: "ul", items: [
+          "nama lengkap", "nama pengguna (username)", "alamat email", "nomor telepon atau WhatsApp",
+          "nama perusahaan atau organisasi", "jabatan atau peran", "informasi profil",
+          "status akun", "izin pengguna dan tingkat akses", "informasi autentikasi",
+        ] },
+        { type: "p", text: "Kata sandi tidak dimaksudkan untuk disimpan dalam bentuk teks biasa yang dapat dibaca dan harus dilindungi menggunakan mekanisme keamanan yang sesuai." },
+      ],
+    },
+    {
+      number: "2.2",
+      title: "Data Operasional dan Produksi",
+      sub: true,
+      blocks: [
+        { type: "p", text: "BSFDM dapat memproses informasi yang dimasukkan oleh pengguna terkait operasional BSF, termasuk:" },
+        { type: "ul", items: [
+          "nomor atau identifikasi biopond", "jumlah atau berat baby maggot", "tanggal penebaran (stocking)",
+          "tanggal panen terjadwal", "tanggal panen aktual", "jumlah pakan", "sumber pakan",
+          "sumber sampah organik", "jumlah sampah organik", "informasi klien atau hotel",
+          "produksi telur BSF", "produksi maggot", "data prepupa dan pupa", "data indukan (breeding stock)",
+          "produksi kasgot atau pupuk organik", "inventaris", "informasi penjualan",
+          "target produksi", "jadwal produksi", "catatan operasional",
+          "data lain terkait aktivitas produksi BSF",
+        ] },
+        { type: "p", text: "Sebagian besar data produksi operasional merupakan informasi bisnis atau operasional, bukan data pribadi. Namun, informasi tersebut dapat menjadi data pribadi apabila dapat dikaitkan dengan individu yang dapat diidentifikasi." },
+      ],
+    },
+    {
+      number: "2.3",
+      title: "Data Klien",
+      sub: true,
+      blocks: [
+        { type: "p", text: "Pengguna resmi dapat memasukkan informasi terkait klien atau mitra bisnis, termasuk:" },
+        { type: "ul", items: [
+          "nama perusahaan atau hotel", "kontak person", "nomor telepon", "alamat email", "alamat",
+          "informasi pengambilan sampah", "volume sampah", "jadwal pengambilan",
+          "informasi kerja sama", "catatan operasional terkait klien",
+        ] },
+        { type: "p", text: "Pengguna yang memasukkan informasi pihak ketiga ke dalam BSFDM bertanggung jawab untuk memastikan bahwa mereka memiliki dasar atau otorisasi yang sesuai untuk memberikan informasi tersebut." },
+      ],
+    },
+    {
+      number: "3",
+      title: "Informasi yang Dikumpulkan Secara Otomatis",
+      blocks: [
+        { type: "p", text: "Saat Anda mengakses BSFDM, informasi teknis tertentu dapat dikumpulkan secara otomatis, seperti:" },
+        { type: "ul", items: [
+          "alamat IP", "jenis browser", "sistem operasi", "jenis perangkat",
+          "identifikasi perangkat, jika berlaku", "tanggal dan waktu login", "informasi sesi",
+          "halaman atau fitur yang diakses", "aktivitas aplikasi", "log kesalahan (error log)", "log keamanan",
+          "informasi teknis lain yang diperlukan untuk menjaga kinerja dan keamanan sistem",
+        ] },
+        { type: "p", text: "Informasi ini dapat digunakan untuk mendeteksi kesalahan, mencegah akses tidak sah, meningkatkan kinerja, dan menjaga keamanan sistem." },
+      ],
+    },
+    {
+      number: "4",
+      title: "Log Aktivitas dan Jejak Audit",
+      blocks: [
+        { type: "p", text: "BSFDM dapat menyimpan jejak audit atas aktivitas yang dilakukan di dalam platform." },
+        { type: "p", text: "Informasi audit dapat mencakup:" },
+        { type: "ul", items: [
+          "pengguna yang melakukan tindakan", "tanggal dan waktu tindakan", "data yang dibuat", "data yang diubah",
+          "data yang dihapus", "aktivitas login", "perubahan izin pengguna", "perubahan data produksi",
+          "aktivitas sistem penting lainnya",
+        ] },
+        { type: "p", text: "Log audit dimaksudkan untuk meningkatkan akuntabilitas, keterlacakan, keamanan, dan integritas data operasional." },
+      ],
+    },
+    {
+      number: "5",
+      title: "Bagaimana Kami Menggunakan Informasi",
+      blocks: [
+        { type: "p", text: "Informasi yang dikumpulkan melalui BSFDM dapat digunakan untuk:" },
+        { type: "ul", items: [
+          "menyediakan dan mengoperasikan layanan BSFDM", "membuat dan mengelola akun pengguna", "melakukan autentikasi pengguna",
+          "menerapkan Kontrol Akses Berbasis Peran (Role-Based Access Control)", "mengelola aktivitas produksi BSF",
+          "mengelola biopond dan jadwal produksi", "memantau pengolahan sampah organik",
+          "mengelola sumber dan penggunaan pakan", "memantau hasil produksi dan panen",
+          "mengelola informasi operasional terkait klien", "menghasilkan laporan dan analitik",
+          "menampilkan dasbor operasional", "memberikan notifikasi panen dan produksi",
+          "memelihara catatan produksi historis", "menganalisis efisiensi operasional",
+          "meningkatkan fungsi platform", "mengatasi masalah teknis",
+          "mendeteksi aktivitas mencurigakan", "mencegah akses sistem yang tidak sah",
+          "menjaga keamanan sistem", "melakukan pencadangan (backup) dan pemulihan bencana",
+          "mematuhi kewajiban hukum yang berlaku", "mengembangkan dan meningkatkan layanan BSFDM",
+        ] },
+        { type: "p", text: "Bila diizinkan, informasi agregat atau anonim juga dapat digunakan untuk analisis statistik, penelitian, benchmarking operasional, dan pengembangan platform." },
+      ],
+    },
+    {
+      number: "6",
+      title: "Dasar Hukum Pemrosesan",
+      blocks: [
+        { type: "p", text: "Bila berlaku, BSFDM memproses data pribadi berdasarkan dasar hukum yang diakui berdasarkan peraturan perundang-undangan yang berlaku, yang dapat mencakup:" },
+        { type: "ul", items: [
+          "persetujuan dari subjek data", "pemenuhan kewajiban kontraktual",
+          "pemenuhan kewajiban hukum",
+          "kepentingan sah (legitimate interest) terkait keamanan sistem dan operasional layanan",
+          "pemenuhan perjanjian antara BSFDM dan organisasi yang menggunakan platform",
+          "dasar hukum lain yang diizinkan berdasarkan peraturan yang berlaku",
+        ] },
+        { type: "p", text: "Jika pemrosesan didasarkan pada persetujuan, pengguna dapat memiliki hak untuk menarik persetujuan tersebut sesuai dengan hukum yang berlaku." },
+      ],
+    },
+    {
+      number: "7",
+      title: "Kontrol Akses Berbasis Peran",
+      blocks: [
+        { type: "p", text: "BSFDM menerapkan akses pengguna sesuai dengan peran yang ditetapkan." },
+        { type: "p", text: "Pengguna yang berbeda dapat memiliki hak akses yang berbeda, misalnya:" },
+        { type: "dl", items: [
+          { term: "Super Administrator", desc: "Dapat mengelola platform, pengguna, izin, konfigurasi operasional, dan data sistem secara keseluruhan sesuai dengan wewenang yang diberikan." },
+          { term: "Administrator", desc: "Dapat mengelola informasi organisasi atau operasional tertentu dalam ruang lingkup yang diizinkan." },
+          { term: "Operator", desc: "Dapat mengakses fitur operasional yang diperlukan untuk aktivitas lapangan, seperti produksi, biopond, panen, pakan, indukan, pupuk organik, dan manajemen kalender." },
+          { term: "Management", desc: "Dapat mengakses laporan, dasbor, analitik, atau informasi lain yang diperlukan untuk pemantauan dan pengambilan keputusan." },
+        ] },
+        { type: "p", text: "Pengguna hanya dapat mengakses informasi yang diizinkan sesuai peran dan wewenangnya." },
+        { type: "p", text: "Upaya tidak sah untuk mengakses informasi di luar peran yang ditetapkan dilarang." },
+      ],
+    },
+    {
+      number: "8",
+      title: "Berbagi Data",
+      blocks: [
+        { type: "p", text: "BSFDM tidak menjual data pribadi pengguna." },
+        { type: "p", text: "Kami dapat mengungkapkan informasi dalam keadaan terbatas kepada:" },
+        { type: "ul", items: [
+          "personel resmi dalam organisasi yang mengoperasikan BSFDM",
+          "organisasi yang secara sah menggunakan platform BSFDM",
+          "penyedia infrastruktur dan layanan cloud", "penyedia layanan basis data atau pencadangan (backup)",
+          "penyedia layanan email, WhatsApp, atau notifikasi, jika terintegrasi",
+          "penyedia layanan analitik atau pemantauan", "penyedia layanan keamanan siber",
+          "penasihat profesional",
+          "otoritas pemerintah atau penegak hukum jika diwajibkan secara hukum",
+          "penyedia layanan lain yang diperlukan untuk mengoperasikan BSFDM",
+        ] },
+        { type: "p", text: "Pihak ketiga yang memproses data pribadi atas nama kami diharapkan hanya memproses informasi tersebut untuk tujuan yang sah dan menerapkan langkah pengamanan yang memadai." },
+      ],
+    },
+    {
+      number: "9",
+      title: "Keamanan Data",
+      blocks: [
+        { type: "p", text: "Kami mengambil langkah teknis dan organisasi yang wajar untuk melindungi informasi yang diproses oleh BSFDM." },
+        { type: "p", text: "Tergantung pada implementasi sistem, langkah-langkah ini dapat mencakup:" },
+        { type: "ul", items: [
+          "komunikasi terenkripsi menggunakan HTTPS/TLS", "hashing kata sandi", "autentikasi yang aman",
+          "Kontrol Akses Berbasis Peran", "kontrol otorisasi", "pembatasan akses basis data",
+          "manajemen sesi", "log audit", "pemantauan server dan aplikasi",
+          "validasi input", "perlindungan terhadap akses tidak sah", "pembaruan keamanan",
+          "pencadangan data", "prosedur pemulihan bencana", "pemantauan insiden keamanan",
+        ] },
+        { type: "p", text: "Namun, tidak ada sistem berbasis internet yang dapat menjamin keamanan mutlak." },
+        { type: "p", text: "Pengguna juga bertanggung jawab untuk menjaga kerahasiaan kredensial login mereka dan tidak boleh membagikan akun atau kata sandi kepada pihak yang tidak berwenang." },
+      ],
+    },
+    {
+      number: "10",
+      title: "Retensi Data",
+      blocks: [
+        { type: "p", text: "Kami menyimpan informasi hanya selama secara wajar diperlukan untuk:" },
+        { type: "ul", items: [
+          "menyediakan layanan BSFDM", "memelihara riwayat produksi", "menghasilkan laporan operasional",
+          "memenuhi kewajiban kontraktual", "mematuhi persyaratan hukum yang berlaku",
+          "menyelesaikan sengketa", "melakukan investigasi keamanan", "memelihara catatan bisnis yang sah",
+        ] },
+        { type: "p", text: "Periode retensi dapat berbeda tergantung pada jenis informasi dan tujuan pemrosesan." },
+        { type: "p", text: "Ketika informasi tidak lagi diperlukan, kami dapat menghapus, memusnahkan, menganonimkan, atau mengarsipkannya secara aman sesuai dengan persyaratan yang berlaku dan kebijakan internal." },
+      ],
+    },
+    {
+      number: "11",
+      title: "Data Cadangan (Backup)",
+      blocks: [
+        { type: "p", text: "BSFDM dapat menyimpan cadangan basis data dan informasi aplikasi untuk mendukung:" },
+        { type: "ul", items: [
+          "pemulihan bencana", "pemulihan data", "kelangsungan sistem",
+          "perlindungan terhadap kehilangan data yang tidak disengaja",
+        ] },
+        { type: "p", text: "Data yang dihapus dapat tetap berada sementara dalam sistem cadangan hingga siklus retensi cadangan yang relevan berakhir." },
+        { type: "p", text: "Akses ke informasi cadangan harus dibatasi hanya untuk personel yang berwenang." },
+      ],
+    },
+    {
+      number: "12",
+      title: "Hak Pengguna",
+      blocks: [
+        { type: "p", text: "Sesuai dengan peraturan perundang-undangan yang berlaku, pengguna atau subjek data lainnya dapat memiliki hak terkait data pribadi mereka, termasuk hak untuk:" },
+        { type: "ul", items: [
+          "memperoleh informasi mengenai bagaimana data pribadi mereka diproses",
+          "mengakses data pribadi mereka", "meminta koreksi atas informasi yang tidak akurat",
+          "memperbarui informasi yang tidak lengkap",
+          "meminta penghapusan atau pemusnahan data pribadi jika diizinkan secara hukum",
+          "menarik persetujuan jika pemrosesan didasarkan pada persetujuan",
+          "meminta pembatasan atau penghentian sementara aktivitas pemrosesan tertentu",
+          "mengajukan keberatan atas aktivitas pemrosesan tertentu jika berlaku",
+          "memperoleh salinan data pribadi mereka jika berlaku",
+          "menggunakan hak lain yang diberikan berdasarkan peraturan perlindungan data pribadi yang berlaku",
+        ] },
+        { type: "p", text: "Permintaan tertentu dapat dikenakan verifikasi identitas serta batasan hukum atau kontraktual." },
+      ],
+    },
+    {
+      number: "13",
+      title: "Koreksi Data",
+      blocks: [
+        { type: "p", text: "Pengguna harus memastikan bahwa informasi yang diberikan kepada BSFDM akurat dan mutakhir." },
+        { type: "p", text: "Jika fungsi memungkinkan, pengguna dapat memperbarui informasi akun tertentu secara langsung melalui profil atau pengaturan akun mereka." },
+        { type: "p", text: "Untuk informasi yang tidak dapat diperbarui secara langsung, pengguna dapat menghubungi administrator BSFDM." },
+      ],
+    },
+    {
+      number: "14",
+      title: "Penghapusan Akun",
+      blocks: [
+        { type: "p", text: "Pengguna dapat meminta penghapusan atau penonaktifan akun mereka melalui mekanisme manajemen akun yang tersedia atau dengan menghubungi administrator BSFDM." },
+        { type: "p", text: "Penghapusan akun tidak selalu berarti penghapusan seluruh data terkait secara langsung." },
+        { type: "p", text: "Data tertentu mungkin perlu disimpan jika diperlukan untuk:" },
+        { type: "ul", items: [
+          "catatan produksi", "jejak audit", "kewajiban hukum", "kewajiban kontraktual",
+          "investigasi kecurangan atau keamanan", "penyelesaian sengketa",
+          "pencatatan organisasi yang sah",
+        ] },
+        { type: "p", text: "Jika memungkinkan, informasi yang tidak lagi perlu mengidentifikasi individu dapat dianonimkan." },
+      ],
+    },
+    {
+      number: "15",
+      title: "Cookie",
+      blocks: [
+        { type: "p", text: "BSFDM dapat menggunakan cookie atau teknologi serupa untuk memelihara dan meningkatkan fungsi platform." },
+        { type: "p", text: "Cookie dapat digunakan untuk:" },
+        { type: "ul", items: [
+          "mempertahankan sesi login", "autentikasi", "mengingat preferensi pengguna",
+          "keamanan aplikasi", "mencegah aktivitas tidak sah", "kinerja aplikasi",
+          "memahami cara platform digunakan",
+        ] },
+        { type: "p", text: "Cookie esensial mungkin diperlukan agar BSFDM dapat berfungsi dengan baik." },
+        { type: "p", text: "Jika cookie analitik atau cookie non-esensial serupa diterapkan, kontrol pengguna yang sesuai dapat disediakan jika diperlukan." },
+      ],
+    },
+    {
+      number: "16",
+      title: "Layanan Pihak Ketiga",
+      blocks: [
+        { type: "p", text: "BSFDM dapat terintegrasi dengan layanan pihak ketiga seperti:" },
+        { type: "ul", items: [
+          "infrastruktur cloud", "layanan email", "layanan WhatsApp atau pesan instan",
+          "layanan notifikasi", "penyedia autentikasi", "alat analitik", "alat pemantauan",
+          "layanan pemetaan (mapping)", "aplikasi bisnis lainnya",
+        ] },
+        { type: "p", text: "Informasi yang diproses melalui layanan pihak ketiga juga dapat tunduk pada kebijakan privasi masing-masing penyedia." },
+        { type: "p", text: "BSFDM akan berupaya menggunakan penyedia layanan dengan praktik keamanan dan privasi yang wajar." },
+      ],
+    },
+    {
+      number: "17",
+      title: "Transfer Data",
+      blocks: [
+        { type: "p", text: "Dalam keadaan tertentu, penyedia layanan yang digunakan oleh BSFDM dapat memproses atau menyimpan informasi pada infrastruktur yang berlokasi di luar Indonesia." },
+        { type: "p", text: "Jika terjadi transfer data pribadi lintas batas negara, BSFDM akan mengambil langkah-langkah yang sesuai berdasarkan persyaratan perlindungan data pribadi yang berlaku." },
+      ],
+    },
+    {
+      number: "18",
+      title: "Pelanggaran Data dan Insiden Keamanan",
+      blocks: [
+        { type: "p", text: "Jika BSFDM mengetahui adanya pelanggaran data pribadi atau insiden keamanan lainnya, kami akan menyelidiki dan mengambil langkah yang sesuai untuk:" },
+        { type: "ul", items: [
+          "mengendalikan insiden", "mengurangi dampak potensial", "mengamankan sistem yang terdampak",
+          "mengidentifikasi informasi yang terdampak", "memulihkan keamanan sistem",
+          "mencegah insiden serupa terulang kembali",
+        ] },
+        { type: "p", text: "Jika diwajibkan oleh hukum yang berlaku, subjek data yang terdampak dan otoritas terkait akan diberitahu dalam jangka waktu yang ditentukan." },
+      ],
+    },
+    {
+      number: "19",
+      title: "Penggunaan Data Agregat dan Anonim",
+      blocks: [
+        { type: "p", text: "BSFDM dapat memproses informasi operasional agregat atau anonim untuk tujuan seperti:" },
+        { type: "ul", items: [
+          "analisis kinerja produksi", "analisis pengurangan sampah", "analisis produktivitas BSF",
+          "analisis konversi pakan", "pemanfaatan fasilitas", "analisis keberlanjutan (sustainability)", "penelitian",
+          "benchmarking", "pengembangan platform",
+        ] },
+        { type: "p", text: "Informasi tersebut akan diproses sedemikian rupa sehingga tidak dimaksudkan untuk mengidentifikasi individu." },
+      ],
+    },
+    {
+      number: "20",
+      title: "Analitik dan Kecerdasan Buatan",
+      blocks: [
+        { type: "p", text: "BSFDM di masa mendatang dapat menyediakan fitur analitik atau berbasis kecerdasan buatan (AI) untuk membantu pengguna menganalisis informasi operasional." },
+        { type: "p", text: "Fitur-fitur ini dapat mencakup:" },
+        { type: "ul", items: [
+          "prediksi produksi", "estimasi panen", "deteksi anomali",
+          "analisis penggunaan pakan", "analisis pengolahan sampah", "rekomendasi operasional",
+          "ringkasan produksi", "laporan otomatis",
+        ] },
+        { type: "p", text: "Jika pemrosesan berbasis AI melibatkan data pribadi, pemrosesan tersebut akan dilakukan sesuai dengan persyaratan privasi yang berlaku." },
+        { type: "p", text: "Analisis otomatis dimaksudkan untuk mendukung pengambilan keputusan operasional dan tidak boleh dijadikan satu-satunya dasar untuk keputusan penting tanpa peninjauan manusia yang memadai." },
+      ],
+    },
+    {
+      number: "21",
+      title: "Privasi Anak",
+      blocks: [
+        { type: "p", text: "BSFDM dirancang terutama sebagai platform manajemen operasional dan bisnis profesional dan tidak ditujukan untuk digunakan oleh anak-anak." },
+        { type: "p", text: "Kami tidak secara sengaja mengumpulkan data pribadi dari anak-anak melalui penggunaan standar BSFDM." },
+        { type: "p", text: "Jika kami mengetahui bahwa data pribadi milik anak telah dikumpulkan tanpa dasar hukum atau otorisasi yang sesuai, langkah-langkah yang tepat akan diambil." },
+      ],
+    },
+    {
+      number: "22",
+      title: "Tanggung Jawab Pengguna",
+      blocks: [
+        { type: "p", text: "Pengguna bertanggung jawab untuk:" },
+        { type: "ul", items: [
+          "memberikan informasi yang akurat", "menjaga kerahasiaan kredensial login",
+          "menggunakan BSFDM hanya untuk tujuan yang sah",
+          "memastikan data yang dimasukkan ke dalam BSFDM diperoleh secara sah",
+          "tidak membagikan akun kepada pihak yang tidak berwenang",
+          "segera melaporkan dugaan akses tidak sah",
+          "mematuhi kebijakan internal organisasi",
+          "mematuhi hukum yang berlaku saat memproses informasi melalui BSFDM",
+        ] },
+        { type: "p", text: "Pengguna tidak boleh menggunakan BSFDM untuk menyimpan, mendistribusikan, atau memproses informasi secara melawan hukum." },
+      ],
+    },
+    {
+      number: "23",
+      title: "Perubahan Kebijakan Privasi Ini",
+      blocks: [
+        { type: "p", text: "Kami dapat memperbarui Kebijakan Privasi ini dari waktu ke waktu untuk mencerminkan:" },
+        { type: "ul", items: [
+          "perubahan fitur BSFDM", "perubahan teknologi", "perubahan proses bisnis",
+          "perubahan praktik keamanan", "perubahan hukum dan peraturan yang berlaku",
+        ] },
+        { type: "p", text: "Ketika perubahan material dilakukan, Kebijakan Privasi yang diperbarui akan dipublikasikan di situs web BSFDM atau dikomunikasikan melalui platform jika diperlukan." },
+        { type: "p", text: "Tanggal “Terakhir Diperbarui” di bagian atas Kebijakan Privasi ini menunjukkan kapan revisi terakhir dilakukan." },
+      ],
+    },
+    {
+      number: "24",
+      title: "Hukum yang Berlaku",
+      blocks: [
+        { type: "p", text: "Kebijakan Privasi ini dan pemrosesan data pribadi melalui BSFDM dimaksudkan untuk dilaksanakan sesuai dengan peraturan perundang-undangan yang berlaku di Republik Indonesia, termasuk peraturan yang berlaku terkait perlindungan data pribadi dan sistem elektronik." },
+      ],
+    },
+    {
+      number: "25",
+      title: "Hubungi Kami",
+      blocks: [
+        { type: "p", text: "Jika Anda memiliki pertanyaan, kekhawatiran, keluhan, atau permintaan terkait Kebijakan Privasi ini atau pemrosesan data pribadi melalui BSFDM, silakan hubungi:" },
+        { type: "address", lines: [
+          "BSFDM — Black Soldier Fly Data Management",
+          "Website: https://bsfdm.id",
+          "Email: halo@bsfdm.id",
+          "Alamat: Piyungan, Bantul, Yogyakarta",
+        ] },
+        { type: "p", text: "Untuk permintaan terkait akses, koreksi, penghapusan, pembatasan, atau hak data pribadi lainnya, mohon sertakan informasi yang cukup agar kami dapat memverifikasi identitas Anda dan memproses permintaan tersebut secara aman." },
+      ],
+    },
+  ],
+};
+
+export const PRIVACY_POLICY = { en, id };

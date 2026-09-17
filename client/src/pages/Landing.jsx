@@ -76,7 +76,8 @@ const navLinks = [
 ];
 
 export default function Landing() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const policy = PRIVACY_POLICY[lang] || PRIVACY_POLICY.en;
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [range, setRange] = useState("monthly");
@@ -1014,14 +1015,14 @@ export default function Landing() {
             <div className="pp-modal">
               <div className="pp-head">
                 <div>
-                  <h3>{PRIVACY_POLICY.title}</h3>
-                  <span className="pp-updated">Last Updated: {PRIVACY_POLICY.lastUpdated}</span>
+                  <h3>{policy.title}</h3>
+                  <span className="pp-updated">{policy.lastUpdatedLabel}: {policy.lastUpdated}</span>
                 </div>
                 <button aria-label="Close" onClick={() => setPrivacyOpen(false)}><X size={20} /></button>
               </div>
               <div className="pp-body">
-                {PRIVACY_POLICY.intro.map((text, i) => <p key={i}>{text}</p>)}
-                {PRIVACY_POLICY.sections.map((s) => (
+                {policy.intro.map((text, i) => <p key={i}>{text}</p>)}
+                {policy.sections.map((s) => (
                   <div key={s.number} className={s.sub ? "pp-subsection" : "pp-section"}>
                     <h4>{s.number}. {s.title}</h4>
                     {s.blocks.map(renderPolicyBlock)}
