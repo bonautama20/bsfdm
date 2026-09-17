@@ -15,6 +15,7 @@ import LanguageToggle from "../components/ui/LanguageToggle.jsx";
 import CommunityMap from "../components/CommunityMap.jsx";
 import { useLanguage } from "../context/LanguageContext.jsx";
 import { api } from "../api/client.js";
+import { PRIVACY_POLICY } from "../data/privacyPolicy.js";
 
 const prefersReducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -46,6 +47,24 @@ const datasets = {
   yearly: { labels: ["2021", "2022", "2023", "2024", "2025", "2026"], values: [38, 48, 58, 70, 84, 98] },
 };
 
+function renderPolicyBlock(block, i) {
+  if (block.type === "p") return <p key={i}>{block.text}</p>;
+  if (block.type === "ul") return <ul key={i}>{block.items.map((item, j) => <li key={j}>{item}</li>)}</ul>;
+  if (block.type === "dl") return (
+    <div key={i} className="pp-dl">
+      {block.items.map((item, j) => (
+        <div key={j} className="pp-dl-item"><strong>{item.term}</strong><p>{item.desc}</p></div>
+      ))}
+    </div>
+  );
+  if (block.type === "address") return (
+    <div key={i} className="pp-address">
+      {block.lines.map((line, j) => <div key={j}>{line}</div>)}
+    </div>
+  );
+  return null;
+}
+
 const navLinks = [
   { href: "#home", key: "landing.nav.home" },
   { href: "#about", key: "landing.nav.about" },
@@ -61,6 +80,7 @@ export default function Landing() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [range, setRange] = useState("monthly");
+  const [privacyOpen, setPrivacyOpen] = useState(false);
   const wrapperRef = useRef(null);
   const navigate = useNavigate();
 
@@ -434,6 +454,31 @@ export default function Landing() {
 
         .bsfdm ::selection{background:var(--lime); color:#06180F;}
         .bsfdm a:focus-visible, .bsfdm button:focus-visible{outline:2px solid var(--green); outline-offset:3px; border-radius:4px;}
+
+        .bsfdm .pp-overlay{position:fixed; inset:0; background:rgba(10,32,23,.55); z-index:1200; display:flex; align-items:center; justify-content:center; padding:24px;}
+        .bsfdm .pp-modal{background:var(--surface); border-radius:18px; width:100%; max-width:720px; max-height:86vh; display:flex; flex-direction:column; box-shadow:var(--shadow-lg);}
+        .bsfdm .pp-head{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:24px 28px; border-bottom:1px solid var(--line);}
+        .bsfdm .pp-head h3{font-family:var(--font-display); font-size:1.3rem; font-weight:800; color:var(--ink); margin:0;}
+        .bsfdm .pp-updated{display:block; margin-top:4px; font-size:.82rem; color:var(--muted);}
+        .bsfdm .pp-head button{color:var(--muted); padding:4px; flex-shrink:0;}
+        .bsfdm .pp-head button:hover{color:var(--ink);}
+        .bsfdm .pp-body{padding:24px 28px 32px; overflow-y:auto; font-size:.92rem; line-height:1.7; color:var(--ink-soft);}
+        .bsfdm .pp-body > p{margin:0 0 14px;}
+        .bsfdm .pp-section{margin-top:28px;}
+        .bsfdm .pp-section:first-of-type{margin-top:8px;}
+        .bsfdm .pp-section h4{font-family:var(--font-display); font-size:1.02rem; font-weight:800; color:var(--ink); margin:0 0 10px;}
+        .bsfdm .pp-subsection{margin-top:18px;}
+        .bsfdm .pp-subsection h4{font-family:var(--font-display); font-size:.92rem; font-weight:700; color:var(--ink); margin:0 0 8px;}
+        .bsfdm .pp-body p{margin:0 0 10px;}
+        .bsfdm .pp-body ul{list-style:disc; padding-left:22px; margin:0 0 12px; display:block;}
+        .bsfdm .pp-body ul li{margin-bottom:6px;}
+        .bsfdm .pp-dl{margin:0 0 12px; display:flex; flex-direction:column; gap:12px;}
+        .bsfdm .pp-dl-item strong{display:block; color:var(--ink); font-weight:700; margin-bottom:3px;}
+        .bsfdm .pp-dl-item p{margin:0;}
+        .bsfdm .pp-address{margin:0 0 12px; padding:14px 16px; background:var(--canvas); border-radius:10px; font-style:normal;}
+        .bsfdm .pp-address div{margin-bottom:3px;}
+        .bsfdm .pp-address div:last-child{margin-bottom:0;}
+        @media (max-width:640px){ .bsfdm .pp-modal{max-height:92vh;} .bsfdm .pp-head{padding:18px 20px;} .bsfdm .pp-body{padding:18px 20px 26px;} }
       `}</style>
 
       <div className="bsfdm">
@@ -941,7 +986,7 @@ export default function Landing() {
                 <ul>
                   <li><a href="#about">{t("landing.footer.about")}</a></li>
                   <li><a href="#contact">{t("landing.footer.contact")}</a></li>
-                  <li><a href="#">{t("landing.footer.privacyPolicy")}</a></li>
+                  <li><a href="#" onClick={(e) => { e.preventDefault(); setPrivacyOpen(true); }}>{t("landing.footer.privacyPolicy")}</a></li>
                   <li><a href="#">{t("landing.footer.termsConditions")}</a></li>
                 </ul>
               </div>
@@ -963,6 +1008,29 @@ export default function Landing() {
             </div>
           </div>
         </footer>
+
+        {privacyOpen && (
+          <div className="pp-overlay" onMouseDown={(e) => e.target === e.currentTarget && setPrivacyOpen(false)}>
+            <div className="pp-modal">
+              <div className="pp-head">
+                <div>
+                  <h3>{PRIVACY_POLICY.title}</h3>
+                  <span className="pp-updated">Last Updated: {PRIVACY_POLICY.lastUpdated}</span>
+                </div>
+                <button aria-label="Close" onClick={() => setPrivacyOpen(false)}><X size={20} /></button>
+              </div>
+              <div className="pp-body">
+                {PRIVACY_POLICY.intro.map((text, i) => <p key={i}>{text}</p>)}
+                {PRIVACY_POLICY.sections.map((s) => (
+                  <div key={s.number} className={s.sub ? "pp-subsection" : "pp-section"}>
+                    <h4>{s.number}. {s.title}</h4>
+                    {s.blocks.map(renderPolicyBlock)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
