@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import {
-  LayoutDashboard, Layers, CalendarDays, Building2, Handshake, FileBarChart2,
+  LayoutDashboard, Layers, Receipt, CalendarDays, Building2, Handshake, FileBarChart2,
   Bell, Settings, ChevronLeft, Users, Lock, Sparkles, ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -11,6 +11,7 @@ import { ROUTE_MODULES, isModuleLocked } from "../../data/planModules.js";
 const navItems = [
   { to: "/dashboard", key: "sidebar.dashboard", icon: LayoutDashboard, end: true },
   { to: "/dashboard/production", key: "sidebar.production", icon: Layers },
+  { to: "/dashboard/sales", key: "sidebar.sales", icon: Receipt },
   { to: "/dashboard/calendar", key: "sidebar.calendar", icon: CalendarDays },
   { to: "/dashboard/clients", key: "sidebar.client", icon: Building2 },
   { to: "/dashboard/vendors", key: "sidebar.vendor", icon: Handshake },

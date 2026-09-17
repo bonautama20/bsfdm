@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bug, Scale, Egg, Users, Sprout, Droplets, Receipt, Plus, Pencil, Trash2, Lock } from "lucide-react";
+import { Bug, Scale, Egg, Users, Sprout, Droplets, Plus, Pencil, Trash2, Lock } from "lucide-react";
 import DataTable from "../../components/ui/DataTable.jsx";
 import Badge from "../../components/ui/Badge.jsx";
 import Modal from "../../components/ui/Modal.jsx";
@@ -11,8 +11,7 @@ import { useProductionLog } from "../../context/ProductionLogContext.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { api } from "../../api/client.js";
 import { useLanguage } from "../../context/LanguageContext.jsx";
-import { fmtNumber, fmtQty, fmtDate, fmtDateTime, fmtCurrency } from "../../utils/format.js";
-import { SALES_TYPES, SALES_TYPE_KEY, unitForSalesType } from "../../operator/pages/SalesForm.jsx";
+import { fmtNumber, fmtQty, fmtDate } from "../../utils/format.js";
 
 function Field({ label, children }) {
   return <div className="db-field"><label>{label}</label>{children}</div>;
@@ -27,7 +26,7 @@ export default function Production() {
   const { allBioponds, totals: biopondTotals, releaseBiopond } = useBiopond();
   // Same shared context the operator forms write through — the field logs
   // below are guaranteed to match exactly what operators submitted, live.
-  const { kasgotRecords, breederRecords, feedRecords, maggotHarvests, salesRecords, addMaggotHarvest, updateSalesRecord } = useProductionLog();
+  const { kasgotRecords, breederRecords, feedRecords, maggotHarvests, addMaggotHarvest } = useProductionLog();
   const [active, setActive] = useState("maggot");
   const [eggs, setEggs] = useState([]);
   const [kasgot, setKasgot] = useState([]);
@@ -116,21 +115,10 @@ export default function Production() {
     return { todayKg, monthlyKg, availableStockKg, soldQtyKg };
   }, [kasgotRecords, kasgot]);
 
-  const salesStats = useMemo(() => {
-    const today = localISODate();
-    const monthPrefix = today.slice(0, 7);
-    const todayRevenue = salesRecords.filter((s) => s.date === today).reduce((sum, s) => sum + (s.totalPrice || 0), 0);
-    const monthRevenue = salesRecords.filter((s) => s.date?.startsWith(monthPrefix)).reduce((sum, s) => sum + (s.totalPrice || 0), 0);
-    return { todayRevenue, monthRevenue, count: salesRecords.length };
-  }, [salesRecords]);
-
-  const salesWithNo = useMemo(() => salesRecords.map((s, i) => ({ ...s, no: i + 1 })), [salesRecords]);
-
-  const [modal, setModal] = useState(null); // 'add-egg' | 'add-kasgot' | 'add-maggot-harvest' | 'add-cage' | 'edit-cage-entry' | 'edit-sales'
+  const [modal, setModal] = useState(null); // 'add-egg' | 'add-kasgot' | 'add-maggot-harvest' | 'add-cage' | 'edit-cage-entry'
   const [form, setForm] = useState({});
   const [editingEggId, setEditingEggId] = useState(null);
   const [deleteEggId, setDeleteEggId] = useState(null);
-  const [editingSalesId, setEditingSalesId] = useState(null);
 
   // ---------- Source cages (Egg Production + Breeder/Parent Stock) ----------
   const [cageCount, setCageCount] = useState(1);
@@ -222,31 +210,7 @@ export default function Production() {
     }
   };
 
-  const openEditSales = (record) => {
-    setEditingSalesId(record.id);
-    setForm({
-      salesDate: record.date, salesType: record.salesType, salesQuantity: record.quantity,
-      salesTotalPrice: record.totalPrice, salesBuyerName: record.buyerName, salesBuyerPhone: record.buyerPhone,
-    });
-    setModal("edit-sales");
-  };
-
-  const handleSaveSales = async (e) => {
-    e.preventDefault();
-    const targetId = editingSalesId;
-    closeModal();
-    try {
-      await updateSalesRecord(targetId, {
-        date: form.salesDate, salesType: form.salesType, quantity: form.salesQuantity,
-        totalPrice: form.salesTotalPrice, buyerName: form.salesBuyerName, buyerPhone: form.salesBuyerPhone,
-        updatedBy: session?.user?.name,
-      });
-    } catch (err) {
-      alert(err.message || t("production.failedEditSales"));
-    }
-  };
-
-  const closeModal = () => { setModal(null); setForm({}); setEditingEggId(null); setEditingCageEntryId(null); setEditingSalesId(null); };
+  const closeModal = () => { setModal(null); setForm({}); setEditingEggId(null); setEditingCageEntryId(null); };
 
   const openEditEgg = (egg) => {
     setEditingEggId(egg.id);
@@ -332,7 +296,7 @@ export default function Production() {
         <p>{t("production.subtitle")}</p>
       </div>
 
-      <div className="db-row db-grid-7">
+      <div className="db-row db-grid-6">
         <div className={`db-card clickable ${active === "maggot" ? "" : ""}`} onClick={() => setActive("maggot")} style={active === "maggot" ? { borderColor: "#01613C" } : undefined}>
           <div className="db-kpi">
             <div className="ic-wrap"><Bug size={20} /></div>
@@ -404,18 +368,6 @@ export default function Production() {
           </div>
           <div style={{ fontSize: ".78rem", color: "var(--db-muted)", marginTop: 8 }}>
             {feedStats.count} {t("production.feedReceived").toLowerCase()}
-          </div>
-        </div>
-
-        <div className="db-card clickable" onClick={() => setActive("sales")} style={active === "sales" ? { borderColor: "#01613C" } : undefined}>
-          <div className="db-kpi">
-            <div className="ic-wrap"><Receipt size={20} /></div>
-            <div className="label">{t("production.sales")}</div>
-            <div className="value">{fmtCurrency(salesStats.todayRevenue)}</div>
-            <div className="foot"><span className="today">{fmtCurrency(salesStats.monthRevenue)} {t("production.thisMonth")}</span></div>
-          </div>
-          <div style={{ fontSize: ".78rem", color: "var(--db-muted)", marginTop: 8 }}>
-            {salesStats.count} {t("production.salesRecorded")}
           </div>
         </div>
       </div>
@@ -619,39 +571,6 @@ export default function Production() {
         </div>
       )}
 
-      {active === "sales" && (
-        <div className="db-card">
-          <div className="db-card-head">
-            <h3>{t("production.salesRecordsTitle")}</h3>
-          </div>
-          <DataTable
-            columns={[
-              { key: "no", label: t("production.colNo") },
-              { key: "date", label: t("common.date"), sortable: true, render: (r) => fmtDate(r.date) },
-              { key: "salesType", label: t("production.colSalesType"), sortable: true, render: (r) => t(SALES_TYPE_KEY[r.salesType]) || r.salesType },
-              { key: "quantity", label: t("production.colQuantity"), sortable: true, render: (r) => `${fmtQty(r.quantity)} ${r.unit}` },
-              { key: "totalPrice", label: t("production.colTotalPrice"), sortable: true, render: (r) => fmtCurrency(r.totalPrice) },
-              { key: "buyerName", label: t("production.colBuyerName") },
-              { key: "buyerPhone", label: t("production.colBuyerPhone") },
-              {
-                key: "updatedAt", label: t("production.colLastUpdated"), render: (r) => (
-                  r.updatedAt
-                    ? <span style={{ fontSize: ".8rem", color: "var(--db-muted)" }}>{t("production.updatedByLine", { name: r.updatedBy || "—", date: fmtDateTime(r.updatedAt) })}</span>
-                    : <span style={{ color: "var(--db-muted)" }}>—</span>
-                )
-              },
-              {
-                key: "actions", label: "", render: (r) => (
-                  <button className="db-btn db-btn-ghost db-btn-sm" title={t("common.edit")} onClick={() => openEditSales(r)}><Pencil size={13} /></button>
-                )
-              },
-            ]}
-            rows={salesWithNo}
-            pageSize={8}
-          />
-        </div>
-      )}
-
       {/* ---- Modals ---- */}
       <Modal open={modal === "add-egg"} onClose={closeModal} title={editingEggId ? t("production.editEggTitle") : t("production.modalAddEggTitle")}
         footer={<><button className="db-btn db-btn-outline" onClick={closeModal}>{t("common.cancel")}</button><button className="db-btn db-btn-primary" form="egg-form" type="submit">{t("common.save")}</button></>}>
@@ -730,32 +649,6 @@ export default function Production() {
 
       <ConfirmDialog open={!!deleteCageEntryId} onClose={() => setDeleteCageEntryId(null)} onConfirm={deleteCageEntry}
         title={t("production.deleteCageEntryTitle")} message={t("production.deleteCageEntryMessage")} />
-
-      <Modal open={modal === "edit-sales"} onClose={closeModal} title={t("production.editSalesTitle")}
-        footer={<><button className="db-btn db-btn-outline" onClick={closeModal}>{t("common.cancel")}</button><button className="db-btn db-btn-primary" form="edit-sales-form" type="submit">{t("common.save")}</button></>}>
-        <form id="edit-sales-form" onSubmit={handleSaveSales}>
-          <div className="db-field-row">
-            <Field label={t("common.date")}><input type="date" value={form.salesDate || ""} onChange={(e) => setForm({ ...form, salesDate: e.target.value })} required /></Field>
-            <Field label={t("salesForm.salesType")}>
-              <select className="db-select" style={{ width: "100%" }} value={form.salesType || ""} onChange={(e) => setForm({ ...form, salesType: e.target.value })} required>
-                {SALES_TYPES.map((type) => <option key={type} value={type}>{t(SALES_TYPE_KEY[type])}</option>)}
-              </select>
-            </Field>
-          </div>
-          <div className="db-field-row">
-            <Field label={`${t("salesForm.quantity")} (${unitForSalesType(form.salesType)})`}>
-              <input type="number" min={0.01} step="any" value={form.salesQuantity ?? ""} onChange={(e) => setForm({ ...form, salesQuantity: e.target.value })} required />
-            </Field>
-            <Field label={t("salesForm.totalPrice")}>
-              <input type="number" min={1} value={form.salesTotalPrice ?? ""} onChange={(e) => setForm({ ...form, salesTotalPrice: e.target.value })} required />
-            </Field>
-          </div>
-          <div className="db-field-row">
-            <Field label={t("salesForm.buyerName")}><input value={form.salesBuyerName || ""} onChange={(e) => setForm({ ...form, salesBuyerName: e.target.value })} required /></Field>
-            <Field label={t("salesForm.buyerPhone")}><input type="tel" value={form.salesBuyerPhone || ""} onChange={(e) => setForm({ ...form, salesBuyerPhone: e.target.value })} required /></Field>
-          </div>
-        </form>
-      </Modal>
 
       <Modal open={cageQuotaLimit != null} onClose={() => setCageQuotaLimit(null)} title={t("biopond.limitReachedTitle")}
         footer={<button className="db-btn db-btn-primary" onClick={() => navigate("/dashboard/upgrade")}>{t("plan.viewUpgradeOptions")}</button>}

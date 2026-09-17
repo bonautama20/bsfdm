@@ -16,6 +16,7 @@ import PlanGate from "./admin/PlanGate.jsx";
 import DashboardLayout from "./admin/components/DashboardLayout.jsx";
 import Dashboard from "./admin/pages/Dashboard.jsx";
 import Production from "./admin/pages/Production.jsx";
+import Sales from "./admin/pages/Sales.jsx";
 import CalendarPage from "./admin/pages/CalendarPage.jsx";
 import Clients from "./admin/pages/Clients.jsx";
 import ClientDetail from "./admin/pages/ClientDetail.jsx";
@@ -67,6 +68,7 @@ export default function App() {
               >
                 <Route index element={<Dashboard />} />
                 <Route path="production" element={<Production />} />
+                <Route path="sales" element={<Sales />} />
                 <Route path="calendar" element={<PlanGate module="Calendar"><CalendarPage /></PlanGate>} />
                 <Route path="clients" element={<PlanGate module="Client"><Clients /></PlanGate>} />
                 <Route path="clients/:clientId" element={<PlanGate module="Client"><ClientDetail /></PlanGate>} />
