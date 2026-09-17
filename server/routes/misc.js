@@ -35,6 +35,78 @@ router.post("/sales-transactions", requirePlan("Report"), requirePermission("Rep
   res.status(201).json(toSale(req.db.prepare("SELECT * FROM sales_transactions WHERE id = ?").get(id)));
 });
 
+// ---------- Sales records (operator "Penjualan" log — see schema-tenant.sql's
+// comment on sales_records for how this differs from sales_transactions
+// above) ----------
+const SALES_TYPES = ["Fresh Maggot", "Baby Maggot", "Egg", "Prepupa", "Pupa", "Kasgot"];
+const unitForSalesType = (salesType) => (salesType === "Egg" ? "gram" : "kg");
+
+const toSalesRecord = (r) => ({
+  id: r.id, date: r.date, salesType: r.sales_type, quantity: r.quantity, unit: r.unit,
+  totalPrice: r.total_price, buyerName: r.buyer_name, buyerPhone: r.buyer_phone,
+  createdBy: r.created_by, createdAt: r.created_at, updatedBy: r.updated_by, updatedAt: r.updated_at,
+});
+
+router.get("/sales-records", (req, res) => {
+  res.json(req.db.prepare("SELECT * FROM sales_records ORDER BY created_at DESC").all().map(toSalesRecord));
+});
+
+// Filled in by operators from the field, same as kasgot-records/maggot-
+// harvests/etc. (see productionLogs.js) — the admin recap page can create
+// one too, hence requireOperatorOrPermission rather than operator-only.
+router.post("/sales-records", requireOperatorOrPermission("Production", "create"), (req, res) => {
+  const { date, salesType, quantity, totalPrice, buyerName, buyerPhone, createdBy } = req.body || {};
+  if (!date || !salesType || !quantity || !totalPrice || !buyerName || !buyerPhone) {
+    return res.status(400).json({ error: "date, salesType, quantity, totalPrice, buyerName, and buyerPhone are required." });
+  }
+  if (!SALES_TYPES.includes(salesType)) {
+    return res.status(400).json({ error: `salesType must be one of: ${SALES_TYPES.join(", ")}.` });
+  }
+  const id = nextId(req.db, "sales_records", "SLR", 4);
+  const ts = nowISO();
+  req.db.prepare(
+    `INSERT INTO sales_records (id,date,sales_type,quantity,unit,total_price,buyer_name,buyer_phone,created_by,created_at)
+     VALUES (?,?,?,?,?,?,?,?,?,?)`
+  ).run(id, date, salesType, Number(quantity), unitForSalesType(salesType), Number(totalPrice), buyerName, buyerPhone, createdBy || null, ts);
+
+  res.status(201).json(toSalesRecord(req.db.prepare("SELECT * FROM sales_records WHERE id = ?").get(id)));
+});
+
+// Admin-only edit — requires Production:edit permission (an operator's own
+// role has no admin-panel permission row at all, so this is effectively
+// admin-only already; see requireOperatorOrPermission's doc comment in
+// middleware/auth.js for why POST above is more permissive than this PATCH).
+// Always stamps updatedBy/updatedAt so the recap list can show who last
+// changed a record and when.
+router.patch("/sales-records/:id", requirePermission("Production", "edit"), (req, res) => {
+  const existing = req.db.prepare("SELECT * FROM sales_records WHERE id = ?").get(req.params.id);
+  if (!existing) return res.status(404).json({ error: "Sales record not found." });
+
+  const { date, salesType, quantity, totalPrice, buyerName, buyerPhone, updatedBy } = req.body || {};
+  if (salesType && !SALES_TYPES.includes(salesType)) {
+    return res.status(400).json({ error: `salesType must be one of: ${SALES_TYPES.join(", ")}.` });
+  }
+  const nextSalesType = salesType ?? existing.sales_type;
+
+  req.db.prepare(
+    `UPDATE sales_records SET date=?, sales_type=?, quantity=?, unit=?, total_price=?, buyer_name=?, buyer_phone=?, updated_by=?, updated_at=?
+     WHERE id=?`
+  ).run(
+    date ?? existing.date,
+    nextSalesType,
+    quantity !== undefined ? Number(quantity) : existing.quantity,
+    unitForSalesType(nextSalesType),
+    totalPrice !== undefined ? Number(totalPrice) : existing.total_price,
+    buyerName ?? existing.buyer_name,
+    buyerPhone ?? existing.buyer_phone,
+    updatedBy || null,
+    nowISO(),
+    req.params.id
+  );
+
+  res.json(toSalesRecord(req.db.prepare("SELECT * FROM sales_records WHERE id = ?").get(req.params.id)));
+});
+
 // ---------- Calendar events ----------
 const toEvent = (e) => ({
   id: e.id, type: e.event_type, title: e.title, date: e.event_date,

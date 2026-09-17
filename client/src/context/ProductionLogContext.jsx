@@ -22,6 +22,7 @@ export function ProductionLogProvider({ children }) {
   const [breederRecords, setBreederRecords] = useState([]);
   const [feedRecords, setFeedRecords] = useState([]);
   const [maggotHarvests, setMaggotHarvests] = useState([]);
+  const [salesRecords, setSalesRecords] = useState([]);
   const [readIds, setReadIds] = useState(() => new Set());
 
   // Same fix as BiopondContext: refetch per logged-in user, not just once on
@@ -33,12 +34,14 @@ export function ProductionLogProvider({ children }) {
       setBreederRecords([]);
       setFeedRecords([]);
       setMaggotHarvests([]);
+      setSalesRecords([]);
       return;
     }
     api.get("/kasgot-records").then(setKasgotRecords).catch(() => {});
     api.get("/breeder-records").then(setBreederRecords).catch(() => {});
     api.get("/feed-records").then(setFeedRecords).catch(() => {});
     api.get("/maggot-harvests").then(setMaggotHarvests).catch(() => {});
+    api.get("/sales-records").then(setSalesRecords).catch(() => {});
   }, [session?.user?.id]);
 
   const addMaggotHarvest = async (data) => {
@@ -59,6 +62,27 @@ export function ProductionLogProvider({ children }) {
   const addFeedRecord = async (data) => {
     const record = await api.post("/feed-records", { date: data.date, clientName: data.clientName, quantityKg: Number(data.quantityKg), createdBy: data.createdBy });
     setFeedRecords((prev) => [record, ...prev]);
+  };
+
+  const addSalesRecord = async (data) => {
+    const record = await api.post("/sales-records", {
+      date: data.date, salesType: data.salesType, quantity: Number(data.quantity),
+      totalPrice: Number(data.totalPrice), buyerName: data.buyerName, buyerPhone: data.buyerPhone,
+      createdBy: data.createdBy,
+    });
+    setSalesRecords((prev) => [record, ...prev]);
+  };
+
+  // Admin-only (see requirePermission("Production","edit") server-side) —
+  // used by Production.jsx's Sales recap table, not by the operator form.
+  const updateSalesRecord = async (id, data) => {
+    const record = await api.patch(`/sales-records/${id}`, {
+      date: data.date, salesType: data.salesType, quantity: Number(data.quantity),
+      totalPrice: Number(data.totalPrice), buyerName: data.buyerName, buyerPhone: data.buyerPhone,
+      updatedBy: data.updatedBy,
+    });
+    setSalesRecords((prev) => prev.map((r) => (r.id === id ? record : r)));
+    return record;
   };
 
   // Harvest notifications are always derived live from the shared biopond data —
@@ -92,8 +116,9 @@ export function ProductionLogProvider({ children }) {
   const isRead = (id) => readIds.has(id);
 
   const value = {
-    kasgotRecords, breederRecords, feedRecords, maggotHarvests,
+    kasgotRecords, breederRecords, feedRecords, maggotHarvests, salesRecords,
     addKasgotRecord, addBreederRecord, addFeedRecord, addMaggotHarvest,
+    addSalesRecord, updateSalesRecord,
     harvestNotifications, unreadCount, markAllRead, isRead,
   };
 

@@ -212,6 +212,27 @@ CREATE TABLE IF NOT EXISTS kasgot_batches (
   sales_status      TEXT
 );
 
+-- ---------- Operator sales log (Penjualan) ----------
+-- Distinct from sales_transactions below (an older, Report-module/paid-only,
+-- admin-facing record with a different shape) — this one is filled in by
+-- operators in the field (mirrors kasgot_records/maggot_harvests/etc.) and is
+-- editable by admins with Production:edit permission, which is why it alone
+-- tracks an updated_by/updated_at audit pair.
+CREATE TABLE IF NOT EXISTS sales_records (
+  id           TEXT PRIMARY KEY,
+  date         TEXT NOT NULL,
+  sales_type   TEXT NOT NULL, -- Fresh Maggot | Baby Maggot | Egg | Prepupa | Pupa | Kasgot
+  quantity     REAL NOT NULL,
+  unit         TEXT NOT NULL, -- gram for Egg, kg for everything else — derived server-side from sales_type
+  total_price  REAL NOT NULL,
+  buyer_name   TEXT NOT NULL,
+  buyer_phone  TEXT NOT NULL,
+  created_by   TEXT,
+  created_at   TEXT NOT NULL,
+  updated_by   TEXT,
+  updated_at   TEXT
+);
+
 -- ---------- Sales ----------
 CREATE TABLE IF NOT EXISTS sales_transactions (
   id             TEXT PRIMARY KEY,

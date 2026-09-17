@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Layers, Scale, Egg, Sprout, Users, Droplets, ChevronRight } from "lucide-react";
+import { Layers, Scale, Egg, Sprout, Users, Droplets, Receipt, ChevronRight } from "lucide-react";
 import BackHeader from "../components/BackHeader.jsx";
 import { useLanguage } from "../../context/LanguageContext.jsx";
 
@@ -14,6 +14,7 @@ export default function OperatorProduction() {
     { to: "/operator/production/kasgot", icon: Sprout, label: t("operatorHome.menuKasgot"), sub: t("operatorHome.menuKasgotSub") },
     { to: "/operator/production/breeder", icon: Users, label: t("operatorHome.menuBreeder"), sub: t("operatorHome.menuBreederSub") },
     { to: "/operator/production/feed", icon: Droplets, label: t("operatorHome.menuFeed"), sub: t("operatorProduction.feedSub") },
+    { to: "/operator/production/sales", icon: Receipt, label: t("operatorHome.menuSales"), sub: t("operatorHome.menuSalesSub") },
   ];
   return (
     <>

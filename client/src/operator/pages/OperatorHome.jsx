@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Layers, Scale, Egg, Sprout, Users, Droplets, CalendarDays, ChevronRight } from "lucide-react";
+import { Bell, Layers, Scale, Egg, Sprout, Users, Droplets, Receipt, CalendarDays, ChevronRight } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useBiopond, localISODate } from "../../context/BiopondContext.jsx";
 import { useProductionLog } from "../../context/ProductionLogContext.jsx";
@@ -16,6 +16,7 @@ const menuCards = [
   { to: "/operator/production/kasgot", icon: Sprout, labelKey: "operatorHome.menuKasgot", subKey: "operatorHome.menuKasgotSub" },
   { to: "/operator/production/breeder", icon: Users, labelKey: "operatorHome.menuBreeder", subKey: "operatorHome.menuBreederSub" },
   { to: "/operator/production/feed", icon: Droplets, labelKey: "operatorHome.menuFeed", subKey: "operatorHome.menuFeedSub" },
+  { to: "/operator/production/sales", icon: Receipt, labelKey: "operatorHome.menuSales", subKey: "operatorHome.menuSalesSub" },
   { to: "/operator/calendar", icon: CalendarDays, labelKey: "operatorHome.menuCalendar", subKey: "operatorHome.menuCalendarSub" },
 ];
 

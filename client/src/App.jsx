@@ -39,6 +39,7 @@ import EggHarvestForm from "./operator/pages/EggHarvestForm.jsx";
 import KasgotForm from "./operator/pages/KasgotForm.jsx";
 import BreederForm from "./operator/pages/BreederForm.jsx";
 import FeedForm from "./operator/pages/FeedForm.jsx";
+import SalesForm from "./operator/pages/SalesForm.jsx";
 import OperatorCalendar from "./operator/pages/OperatorCalendar.jsx";
 import OperatorNotifications from "./operator/pages/OperatorNotifications.jsx";
 import OperatorProfile from "./operator/pages/OperatorProfile.jsx";
@@ -94,6 +95,7 @@ export default function App() {
                 <Route path="production/kasgot" element={<KasgotForm />} />
                 <Route path="production/breeder" element={<BreederForm />} />
                 <Route path="production/feed" element={<FeedForm />} />
+                <Route path="production/sales" element={<SalesForm />} />
                 <Route path="calendar" element={<OperatorCalendar />} />
                 <Route path="notifications" element={<OperatorNotifications />} />
                 <Route path="profile" element={<OperatorProfile />} />
