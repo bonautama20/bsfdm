@@ -22,6 +22,7 @@ import usersRouter from "./routes/users.js";
 import productionLogsRouter from "./routes/productionLogs.js";
 import miscRouter from "./routes/misc.js";
 import communityPublicRouter from "./routes/communityPublic.js";
+import demoRequestsRouter from "./routes/demoRequests.js";
 import communitiesRouter from "./routes/communities.js";
 import billingRouter from "./routes/billing.js";
 import platformRouter from "./routes/platform.js";
@@ -129,6 +130,7 @@ app.use("/api/auth", authRouter);
 // Public read-only community directory (landing page map + list) — no phone
 // numbers, no auth required. Must stay mounted before requireAuth below.
 app.use("/api/community", communityPublicRouter);
+app.use("/api/demo-requests", demoRequestsRouter);
 
 // Every other /api route requires a valid session from here on.
 app.use("/api", requireAuth);

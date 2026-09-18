@@ -5,11 +5,12 @@ import {
   Menu, X, CalendarCheck, Boxes, Bell, FileText, LayoutDashboard, Layers,
   Egg, Droplets, ShoppingBasket, Settings, Database, Activity, BarChart3,
   Clock, Sprout, TrendingUp, Check, Target, ShieldCheck, Building2, Recycle,
-  Share2, Instagram, Linkedin, Youtube, Search, MapPin, Users
+  Share2, Instagram, Linkedin, Youtube, Search, MapPin, Users,
+  CheckCircle2, Phone, Mail, Loader2,
 } from "lucide-react";
-import bsfImg from "../assets/bsf-img.png";
-import maggotImg from "../assets/maggot-img.png";
-import logoHeader from "../assets/logoheader.png";
+import bsfImg from "../assets/bsf-img.webP";
+import maggotImg from "../assets/maggot-img.webP";
+import logoHeader from "../assets/logoheader.webP";
 import logoFooterWhite from "../assets/logo-white-footer.png";
 import LanguageToggle from "../components/ui/LanguageToggle.jsx";
 import CommunityMap from "../components/CommunityMap.jsx";
@@ -93,6 +94,12 @@ export default function Landing() {
   const [range, setRange] = useState("monthly");
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
+  const [demoOpen, setDemoOpen] = useState(false);
+  const [demoForm, setDemoForm] = useState({ phone: "", email: "" });
+  const [demoErrors, setDemoErrors] = useState({});
+  const [demoSubmitting, setDemoSubmitting] = useState(false);
+  const [demoSubmitted, setDemoSubmitted] = useState(false);
+  const [demoFailed, setDemoFailed] = useState(false);
   const wrapperRef = useRef(null);
   const navigate = useNavigate();
 
@@ -129,6 +136,38 @@ export default function Landing() {
     e.preventDefault();
     setMobileOpen(false);
     navigate("/register");
+  };
+
+  const openDemoModal = (e) => {
+    e.preventDefault();
+    setMobileOpen(false);
+    setDemoForm({ phone: "", email: "" });
+    setDemoErrors({});
+    setDemoSubmitted(false);
+    setDemoFailed(false);
+    setDemoOpen(true);
+  };
+
+  const closeDemoModal = () => setDemoOpen(false);
+
+  const handleDemoSubmit = async (e) => {
+    e.preventDefault();
+    const errs = {};
+    if (!demoForm.phone.trim()) errs.phone = t("landing.demo.phoneRequired");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(demoForm.email.trim())) errs.email = t("landing.demo.emailRequired");
+    setDemoErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+
+    setDemoFailed(false);
+    setDemoSubmitting(true);
+    try {
+      await api.post("/demo-requests", { phone: demoForm.phone.trim(), email: demoForm.email.trim() });
+      setDemoSubmitted(true);
+    } catch {
+      setDemoFailed(true);
+    } finally {
+      setDemoSubmitting(false);
+    }
   };
 
   const goToDashboard = (e) => {
@@ -495,6 +534,28 @@ export default function Landing() {
         .bsfdm .pp-address div{margin-bottom:3px;}
         .bsfdm .pp-address div:last-child{margin-bottom:0;}
         @media (max-width:640px){ .bsfdm .pp-modal{max-height:92vh;} .bsfdm .pp-head{padding:18px 20px;} .bsfdm .pp-body{padding:18px 20px 26px;} }
+
+        .bsfdm .demo-modal{position:relative; background:var(--surface); border-radius:18px; width:100%; max-width:440px; padding:36px 32px 32px; box-shadow:var(--shadow-lg);}
+        .bsfdm .demo-close{position:absolute; top:16px; right:16px; color:var(--muted); padding:6px; border-radius:8px;}
+        .bsfdm .demo-close:hover{color:var(--ink); background:var(--canvas);}
+        .bsfdm .demo-modal h3{font-family:var(--font-display); font-size:1.3rem; font-weight:800; color:var(--ink); margin:0 0 10px; padding-right:24px;}
+        .bsfdm .demo-subtitle{font-size:.88rem; color:var(--ink-soft); line-height:1.6; margin:0 0 22px;}
+        .bsfdm .demo-field{margin-bottom:16px;}
+        .bsfdm .demo-field label{display:block; font-size:.8rem; font-weight:700; color:var(--ink); margin-bottom:7px;}
+        .bsfdm .demo-input-wrap{display:flex; align-items:center; gap:9px; border:1.5px solid var(--line); border-radius:11px; padding:12px 14px; color:var(--muted); transition:border-color .2s ease;}
+        .bsfdm .demo-input-wrap:focus-within{border-color:var(--green);}
+        .bsfdm .demo-field.has-err .demo-input-wrap{border-color:#D8452D;}
+        .bsfdm .demo-input-wrap input{flex:1; border:none; background:none; font:inherit; font-size:.92rem; color:var(--ink); outline:none;}
+        .bsfdm .demo-err{margin-top:6px; font-size:.78rem; color:#D8452D; font-weight:600;}
+        .bsfdm .demo-fail{margin-bottom:16px; background:#FDECE3; border:1px solid #E36B14; color:#B3540F; font-size:.82rem; font-weight:600; padding:10px 13px; border-radius:10px;}
+        .bsfdm .demo-modal .btn{border:none; cursor:pointer;}
+        .bsfdm .demo-modal .btn:disabled{opacity:.7; cursor:not-allowed; transform:none;}
+        .bsfdm .demo-spin{animation:spin 0.8s linear infinite;}
+        .bsfdm .demo-success{text-align:center;}
+        .bsfdm .demo-success-ic{width:56px; height:56px; border-radius:50%; background:var(--green-light); color:var(--green); display:flex; align-items:center; justify-content:center; margin:4px auto 18px;}
+        .bsfdm .demo-success h3{padding-right:0;}
+        .bsfdm .demo-success p{font-size:.92rem; color:var(--ink-soft); line-height:1.65; margin:0 0 24px;}
+        @media (max-width:480px){ .bsfdm .demo-modal{padding:30px 22px 26px;} }
       `}</style>
 
       <div className="bsfdm">
@@ -913,7 +974,7 @@ export default function Landing() {
               <p>{t("landing.cta.desc")}</p>
               <div className="cta-btns">
                 <a href="/register" className="btn btn-primary" onClick={goToRegister}>{t("landing.cta.getStarted")}</a>
-                <a href="#" className="btn btn-ghost-dark">{t("landing.cta.requestDemo")}</a>
+                <a href="#" className="btn btn-ghost-dark" onClick={openDemoModal}>{t("landing.cta.requestDemo")}</a>
               </div>
               <div className="cta-note">{t("landing.cta.note")}</div>
             </div>
@@ -1068,6 +1129,59 @@ export default function Landing() {
                 ))}
                 {terms.closing.map((text, i) => <p key={i} style={{ fontWeight: 700, marginTop: 24 }}>{text}</p>)}
               </div>
+            </div>
+          </div>
+        )}
+
+        {demoOpen && (
+          <div className="pp-overlay" onMouseDown={(e) => e.target === e.currentTarget && closeDemoModal()}>
+            <div className="demo-modal">
+              <button className="demo-close" aria-label="Close" onClick={closeDemoModal}><X size={20} /></button>
+              {demoSubmitted ? (
+                <div className="demo-success">
+                  <div className="demo-success-ic"><CheckCircle2 size={30} /></div>
+                  <h3>{t("landing.demo.successTitle")}</h3>
+                  <p>{t("landing.demo.successMessage")}</p>
+                  <button type="button" className="btn btn-primary" onClick={closeDemoModal}>{t("landing.demo.done")}</button>
+                </div>
+              ) : (
+                <>
+                  <h3>{t("landing.demo.title")}</h3>
+                  <p className="demo-subtitle">{t("landing.demo.subtitle")}</p>
+                  <form onSubmit={handleDemoSubmit}>
+                    <div className={`demo-field ${demoErrors.phone ? "has-err" : ""}`}>
+                      <label>{t("landing.demo.phone")}</label>
+                      <div className="demo-input-wrap">
+                        <Phone size={16} />
+                        <input
+                          type="tel"
+                          placeholder={t("landing.demo.phonePlaceholder")}
+                          value={demoForm.phone}
+                          onChange={(e) => setDemoForm({ ...demoForm, phone: e.target.value })}
+                        />
+                      </div>
+                      {demoErrors.phone && <div className="demo-err">{demoErrors.phone}</div>}
+                    </div>
+                    <div className={`demo-field ${demoErrors.email ? "has-err" : ""}`}>
+                      <label>{t("landing.demo.email")}</label>
+                      <div className="demo-input-wrap">
+                        <Mail size={16} />
+                        <input
+                          type="email"
+                          placeholder={t("landing.demo.emailPlaceholder")}
+                          value={demoForm.email}
+                          onChange={(e) => setDemoForm({ ...demoForm, email: e.target.value })}
+                        />
+                      </div>
+                      {demoErrors.email && <div className="demo-err">{demoErrors.email}</div>}
+                    </div>
+                    {demoFailed && <div className="demo-fail">{t("landing.demo.failed")}</div>}
+                    <button type="submit" className="btn btn-primary" style={{ width: "100%" }} disabled={demoSubmitting}>
+                      {demoSubmitting ? <><Loader2 size={16} className="demo-spin" /> {t("landing.demo.submitting")}</> : t("landing.demo.submit")}
+                    </button>
+                  </form>
+                </>
+              )}
             </div>
           </div>
         )}

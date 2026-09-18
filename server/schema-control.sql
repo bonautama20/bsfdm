@@ -80,6 +80,19 @@ CREATE TABLE IF NOT EXISTS upgrade_requests (
   resolved_at TEXT
 );
 
+-- ---------- Demo requests (public landing page "Request Demo" popup) ----------
+-- Submitted by anonymous visitors, before any account/organization exists —
+-- lives in the control DB for the same reason password_resets/organizations
+-- do (no tenant context yet). No admin UI reads this yet; query it directly
+-- until one exists.
+CREATE TABLE IF NOT EXISTS demo_requests (
+  id         TEXT PRIMARY KEY,
+  phone      TEXT NOT NULL,
+  email      TEXT NOT NULL,
+  status     TEXT NOT NULL DEFAULT 'new', -- new | contacted
+  created_at TEXT NOT NULL
+);
+
 -- ---------- Maggot cultivator community directory (shared, cross-tenant) ----------
 -- Public landing page shows name/address/kabupaten/provinsi + the province
 -- distribution map only; phone is only ever returned by the authenticated
