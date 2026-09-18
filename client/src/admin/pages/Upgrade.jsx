@@ -5,6 +5,22 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import { useLanguage } from "../../context/LanguageContext.jsx";
 import { paymentConfig } from "../../data/paymentConfig.js";
 
+// Stand-in for real bank/e-wallet logo artwork (none is bundled with the
+// app) — a colored chip with the brand name reads clearly at a glance
+// without pretending to be the official logo. Swap in `logoImage` on a
+// paymentConfig entry (an actual asset path) to replace this with a real image.
+function PaymentLogo({ label, color }) {
+  return (
+    <div style={{
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
+      height: 30, padding: "0 10px", borderRadius: 7, background: color, color: "#fff",
+      fontSize: ".72rem", fontWeight: 800, letterSpacing: ".01em", flexShrink: 0,
+    }}>
+      {label}
+    </div>
+  );
+}
+
 // Mirrors the sidebar's own item list (client/src/admin/components/Sidebar.jsx)
 // — Production is the one module free orgs already have.
 const FREE_FEATURE_KEYS = ["sidebar.production"];
@@ -74,8 +90,13 @@ export default function Upgrade() {
                 </div>
               ))}
             </div>
-            <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid var(--db-line)", fontWeight: 700 }}>
-              {paymentConfig.priceLabel}
+            <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid var(--db-line)" }}>
+              <div style={{ fontWeight: 800, fontSize: "1.15rem" }}>
+                {paymentConfig.priceYearly} <span style={{ fontWeight: 600, fontSize: ".8rem", color: "var(--db-muted)" }}>/ {t("upgrade.perYear")}</span>
+              </div>
+              <div style={{ fontSize: ".82rem", color: "var(--db-muted)", marginTop: 2 }}>
+                {t("upgrade.priceDailyNote", { amount: paymentConfig.priceDaily })}
+              </div>
             </div>
           </div>
 
@@ -84,27 +105,33 @@ export default function Upgrade() {
               <h3>{t("upgrade.paymentMethodsTitle")}</h3>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
               <div style={{ display: "flex", gap: 12 }}>
                 <Building2 size={18} color="var(--db-accent)" style={{ flexShrink: 0, marginTop: 2 }} />
-                <div>
-                  <div style={{ fontWeight: 700 }}>{t("upgrade.bankTransfer")}</div>
-                  <div style={{ fontSize: ".88rem", color: "var(--db-muted)" }}>
-                    {paymentConfig.bankTransfer.bankName} — {paymentConfig.bankTransfer.accountNumber}
-                    <br />
-                    a.n. {paymentConfig.bankTransfer.accountHolder}
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, marginBottom: 8 }}>{t("upgrade.bankTransfer")}</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {paymentConfig.banks.map((bank) => (
+                      <div key={bank.name} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <PaymentLogo label={bank.name} color={bank.color} />
+                        <span style={{ fontSize: ".88rem", color: "var(--db-muted)" }}>{bank.accountNumber}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
 
               <div style={{ display: "flex", gap: 12 }}>
                 <Wallet size={18} color="var(--db-accent)" style={{ flexShrink: 0, marginTop: 2 }} />
-                <div>
-                  <div style={{ fontWeight: 700 }}>{paymentConfig.eWallet.provider}</div>
-                  <div style={{ fontSize: ".88rem", color: "var(--db-muted)" }}>
-                    {paymentConfig.eWallet.number}
-                    <br />
-                    a.n. {paymentConfig.eWallet.accountHolder}
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, marginBottom: 8 }}>{t("upgrade.eWallet")}</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {paymentConfig.eWallets.map((w) => (
+                      <div key={w.provider} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <PaymentLogo label={w.provider} color={w.color} />
+                        <span style={{ fontSize: ".88rem", color: "var(--db-muted)" }}>{w.number}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
