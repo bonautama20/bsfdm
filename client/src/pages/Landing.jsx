@@ -16,6 +16,7 @@ import CommunityMap from "../components/CommunityMap.jsx";
 import { useLanguage } from "../context/LanguageContext.jsx";
 import { api } from "../api/client.js";
 import { PRIVACY_POLICY } from "../data/privacyPolicy.js";
+import { TERMS_CONDITIONS } from "../data/termsConditions.js";
 
 const prefersReducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -62,6 +63,14 @@ function renderPolicyBlock(block, i) {
       {block.lines.map((line, j) => <div key={j}>{line}</div>)}
     </div>
   );
+  if (block.type === "role") return (
+    <div key={i} className="pp-role">
+      <strong>{block.term}</strong>
+      {block.text && <p>{block.text}</p>}
+      {block.intro && <p>{block.intro}</p>}
+      {block.items && <ul>{block.items.map((item, j) => <li key={j}>{item}</li>)}</ul>}
+    </div>
+  );
   return null;
 }
 
@@ -78,10 +87,12 @@ const navLinks = [
 export default function Landing() {
   const { t, lang } = useLanguage();
   const policy = PRIVACY_POLICY[lang] || PRIVACY_POLICY.en;
+  const terms = TERMS_CONDITIONS[lang] || TERMS_CONDITIONS.en;
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [range, setRange] = useState("monthly");
   const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
   const wrapperRef = useRef(null);
   const navigate = useNavigate();
 
@@ -476,6 +487,10 @@ export default function Landing() {
         .bsfdm .pp-dl{margin:0 0 12px; display:flex; flex-direction:column; gap:12px;}
         .bsfdm .pp-dl-item strong{display:block; color:var(--ink); font-weight:700; margin-bottom:3px;}
         .bsfdm .pp-dl-item p{margin:0;}
+        .bsfdm .pp-role{margin:0 0 14px;}
+        .bsfdm .pp-role strong{display:block; color:var(--ink); font-weight:700; margin-bottom:3px;}
+        .bsfdm .pp-role p{margin:0 0 6px;}
+        .bsfdm .pp-role ul{margin:6px 0 0;}
         .bsfdm .pp-address{margin:0 0 12px; padding:14px 16px; background:var(--canvas); border-radius:10px; font-style:normal;}
         .bsfdm .pp-address div{margin-bottom:3px;}
         .bsfdm .pp-address div:last-child{margin-bottom:0;}
@@ -988,7 +1003,7 @@ export default function Landing() {
                   <li><a href="#about">{t("landing.footer.about")}</a></li>
                   <li><a href="#contact">{t("landing.footer.contact")}</a></li>
                   <li><a href="#" onClick={(e) => { e.preventDefault(); setPrivacyOpen(true); }}>{t("landing.footer.privacyPolicy")}</a></li>
-                  <li><a href="#">{t("landing.footer.termsConditions")}</a></li>
+                  <li><a href="#" onClick={(e) => { e.preventDefault(); setTermsOpen(true); }}>{t("landing.footer.termsConditions")}</a></li>
                 </ul>
               </div>
               <div>
@@ -1028,6 +1043,30 @@ export default function Landing() {
                     {s.blocks.map(renderPolicyBlock)}
                   </div>
                 ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {termsOpen && (
+          <div className="pp-overlay" onMouseDown={(e) => e.target === e.currentTarget && setTermsOpen(false)}>
+            <div className="pp-modal">
+              <div className="pp-head">
+                <div>
+                  <h3>{terms.title}</h3>
+                  <span className="pp-updated">{terms.lastUpdatedLabel}: {terms.lastUpdated}</span>
+                </div>
+                <button aria-label="Close" onClick={() => setTermsOpen(false)}><X size={20} /></button>
+              </div>
+              <div className="pp-body">
+                {terms.intro.map((text, i) => <p key={i}>{text}</p>)}
+                {terms.sections.map((s) => (
+                  <div key={s.number} className={s.sub ? "pp-subsection" : "pp-section"}>
+                    <h4>{s.number}. {s.title}</h4>
+                    {s.blocks.map(renderPolicyBlock)}
+                  </div>
+                ))}
+                {terms.closing.map((text, i) => <p key={i} style={{ fontWeight: 700, marginTop: 24 }}>{text}</p>)}
               </div>
             </div>
           </div>
