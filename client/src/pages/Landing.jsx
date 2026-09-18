@@ -8,9 +8,9 @@ import {
   Share2, Instagram, Linkedin, Youtube, Search, MapPin, Users,
   CheckCircle2, Phone, Mail, Loader2,
 } from "lucide-react";
-import bsfImg from "../assets/bsf-img.webP";
-import maggotImg from "../assets/maggot-img.webP";
-import logoHeader from "../assets/logoheader.webP";
+import bsfImg from "../assets/bsf-img.png";
+import maggotImg from "../assets/maggot-img.png";
+import logoHeader from "../assets/logoheader.png";
 import logoFooterWhite from "../assets/logo-white-footer.png";
 import LanguageToggle from "../components/ui/LanguageToggle.jsx";
 import CommunityMap from "../components/CommunityMap.jsx";
