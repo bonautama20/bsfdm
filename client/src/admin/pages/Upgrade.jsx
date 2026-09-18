@@ -5,19 +5,22 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import { useLanguage } from "../../context/LanguageContext.jsx";
 import { paymentConfig } from "../../data/paymentConfig.js";
 
-// Renders the real brand logo at a fixed height (natural aspect ratio, so
-// wide lockups like GoPay's and squarer ones like BRI's both stay legible).
-// Falls back to a colored chip with the brand name if a paymentConfig entry
-// has no logoImage.
-function PaymentLogo({ label, logoImage, color }) {
-  if (logoImage) return <img src={logoImage} alt={label} style={{ height: 28, width: "auto", flexShrink: 0 }} />;
+// Every brand logo comes in a different native size/aspect ratio (GoPay's
+// lockup is nearly 4:1, BRI's is closer to square) — rendering them at "the
+// same height" still left them looking mismatched, since a tall narrow logo
+// and a short wide one read as very different sizes side by side. Giving
+// every entry an identical fixed-size tile and letting the logo shrink to
+// fit inside it (object-fit: contain) makes every row the same visual
+// weight regardless of the source artwork's shape.
+function PaymentRow({ label, logoImage, color, value }) {
   return (
-    <div style={{
-      display: "inline-flex", alignItems: "center", justifyContent: "center",
-      height: 30, padding: "0 10px", borderRadius: 7, background: color, color: "#fff",
-      fontSize: ".72rem", fontWeight: 800, letterSpacing: ".01em", flexShrink: 0,
-    }}>
-      {label}
+    <div className="upgrade-pay-row">
+      <div className="upgrade-pay-logo">
+        {logoImage
+          ? <img src={logoImage} alt={label} />
+          : <span style={{ color }}>{label}</span>}
+      </div>
+      <span className="upgrade-pay-value">{value}</span>
     </div>
   );
 }
@@ -106,44 +109,35 @@ export default function Upgrade() {
               <h3>{t("upgrade.paymentMethodsTitle")}</h3>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-              <div style={{ display: "flex", gap: 12 }}>
-                <Building2 size={18} color="var(--db-accent)" style={{ flexShrink: 0, marginTop: 2 }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, marginBottom: 8 }}>{t("upgrade.bankTransfer")}</div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {paymentConfig.banks.map((bank) => (
-                      <div key={bank.name} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <PaymentLogo label={bank.name} logoImage={bank.logoImage} color={bank.color} />
-                        <span style={{ fontSize: ".88rem", color: "var(--db-muted)" }}>{bank.accountNumber}</span>
-                      </div>
-                    ))}
-                  </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+              <div>
+                <div className="upgrade-pay-section-label">
+                  <Building2 size={14} /> {t("upgrade.bankTransfer")}
+                </div>
+                <div className="upgrade-pay-list">
+                  {paymentConfig.banks.map((bank) => (
+                    <PaymentRow key={bank.name} label={bank.name} logoImage={bank.logoImage} color={bank.color} value={bank.accountNumber} />
+                  ))}
                 </div>
               </div>
 
-              <div style={{ display: "flex", gap: 12 }}>
-                <Wallet size={18} color="var(--db-accent)" style={{ flexShrink: 0, marginTop: 2 }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, marginBottom: 8 }}>{t("upgrade.eWallet")}</div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {paymentConfig.eWallets.map((w) => (
-                      <div key={w.provider} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <PaymentLogo label={w.provider} logoImage={w.logoImage} color={w.color} />
-                        <span style={{ fontSize: ".88rem", color: "var(--db-muted)" }}>{w.number}</span>
-                      </div>
-                    ))}
-                  </div>
+              <div>
+                <div className="upgrade-pay-section-label">
+                  <Wallet size={14} /> {t("upgrade.eWallet")}
+                </div>
+                <div className="upgrade-pay-list">
+                  {paymentConfig.eWallets.map((w) => (
+                    <PaymentRow key={w.provider} label={w.provider} logoImage={w.logoImage} color={w.color} value={w.number} />
+                  ))}
                 </div>
               </div>
 
               {paymentConfig.qrisImageUrl && (
-                <div style={{ display: "flex", gap: 12 }}>
-                  <QrCode size={18} color="var(--db-accent)" style={{ flexShrink: 0, marginTop: 2 }} />
-                  <div>
-                    <div style={{ fontWeight: 700, marginBottom: 8 }}>QRIS</div>
-                    <img src={paymentConfig.qrisImageUrl} alt="QRIS" style={{ width: 180, borderRadius: 8, border: "1px solid var(--db-line)" }} />
+                <div>
+                  <div className="upgrade-pay-section-label">
+                    <QrCode size={14} /> QRIS
                   </div>
+                  <img src={paymentConfig.qrisImageUrl} alt="QRIS" style={{ width: 180, borderRadius: 8, border: "1px solid var(--db-line)" }} />
                 </div>
               )}
             </div>

@@ -339,3 +339,15 @@
 .cm-tooltip{ margin-top:12px; display:inline-flex; align-items:center; gap:6px; font-size:.85rem; font-weight:600; color:var(--db-ink); background:var(--db-surface); border:1px solid var(--db-line); border-radius:10px; padding:8px 14px; }
 .cm-legend{ display:flex; align-items:center; gap:10px; margin-top:14px; font-size:.76rem; color:var(--db-muted); font-weight:600; }
 .cm-legend .swatch{ width:60px; height:8px; border-radius:99px; background:linear-gradient(90deg, #E3E9E2, var(--db-primary)); }
+
+/* ---------- Upgrade page: payment method rows ---------- */
+.upgrade-pay-section-label{ display:flex; align-items:center; gap:7px; font-size:.72rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--db-muted); margin-bottom:10px; }
+.upgrade-pay-list{ display:flex; flex-direction:column; gap:8px; }
+.upgrade-pay-row{ display:flex; align-items:center; gap:14px; padding:8px 12px; border:1px solid var(--db-line); border-radius:10px; background:var(--db-surface); }
+/* Fixed tile so every brand mark (a nearly-square icon or a wide wordmark lockup)
+   occupies the same footprint — object-fit:contain shrinks the image to fit
+   instead of letting its native aspect ratio dictate the row's visual weight. */
+.upgrade-pay-logo{ width:64px; height:40px; flex-shrink:0; border:1px solid var(--db-line); border-radius:8px; background:#fff; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.upgrade-pay-logo img{ max-width:78%; max-height:62%; object-fit:contain; }
+.upgrade-pay-logo span{ font-size:.7rem; font-weight:800; letter-spacing:.01em; }
+.upgrade-pay-value{ font-size:.92rem; font-weight:700; color:var(--db-ink); letter-spacing:.02em; }
