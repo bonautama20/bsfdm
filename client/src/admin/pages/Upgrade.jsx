@@ -5,11 +5,12 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import { useLanguage } from "../../context/LanguageContext.jsx";
 import { paymentConfig } from "../../data/paymentConfig.js";
 
-// Stand-in for real bank/e-wallet logo artwork (none is bundled with the
-// app) — a colored chip with the brand name reads clearly at a glance
-// without pretending to be the official logo. Swap in `logoImage` on a
-// paymentConfig entry (an actual asset path) to replace this with a real image.
-function PaymentLogo({ label, color }) {
+// Renders the real brand logo at a fixed height (natural aspect ratio, so
+// wide lockups like GoPay's and squarer ones like BRI's both stay legible).
+// Falls back to a colored chip with the brand name if a paymentConfig entry
+// has no logoImage.
+function PaymentLogo({ label, logoImage, color }) {
+  if (logoImage) return <img src={logoImage} alt={label} style={{ height: 28, width: "auto", flexShrink: 0 }} />;
   return (
     <div style={{
       display: "inline-flex", alignItems: "center", justifyContent: "center",
@@ -113,7 +114,7 @@ export default function Upgrade() {
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                     {paymentConfig.banks.map((bank) => (
                       <div key={bank.name} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <PaymentLogo label={bank.name} color={bank.color} />
+                        <PaymentLogo label={bank.name} logoImage={bank.logoImage} color={bank.color} />
                         <span style={{ fontSize: ".88rem", color: "var(--db-muted)" }}>{bank.accountNumber}</span>
                       </div>
                     ))}
@@ -128,7 +129,7 @@ export default function Upgrade() {
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                     {paymentConfig.eWallets.map((w) => (
                       <div key={w.provider} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <PaymentLogo label={w.provider} color={w.color} />
+                        <PaymentLogo label={w.provider} logoImage={w.logoImage} color={w.color} />
                         <span style={{ fontSize: ".88rem", color: "var(--db-muted)" }}>{w.number}</span>
                       </div>
                     ))}

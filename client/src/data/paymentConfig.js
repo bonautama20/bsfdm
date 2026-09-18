@@ -6,24 +6,29 @@
 // (or similar) and point this at it, e.g. "/qris.png" — leave null to hide
 // the QRIS section instead of showing a fake/broken image.
 //
-// banks / eWallets: each entry's `logo` is a short brand tag rendered as a
-// colored chip (see Upgrade.jsx's PaymentLogo) since no licensed logo
-// artwork is bundled with the app — swap in a real image asset per entry
-// (`logoImage: "/assets/bca.png"`) if/when one is available.
+// banks / eWallets: `logoImage` is the real brand logo (rendered at a fixed
+// height, natural aspect ratio — see Upgrade.jsx's PaymentLogo); `color` is
+// only a fallback background used if `logoImage` is ever removed.
 //
 // whatsappNumber: international format, digits only, no "+" or leading 0.
+import bcaLogo from "../assets/BANK_BCA.webp";
+import briLogo from "../assets/BANK_BRI.webp";
+import ovoLogo from "../assets/OVO_LOGO.svg";
+import gopayLogo from "../assets/GOPAY_LOGO.webp";
+import shopeepayLogo from "../assets/SPAY_LOGO.png";
+
 export const paymentConfig = {
   priceYearly: "Rp 110.000",
   priceDaily: "Rp 300",
   qrisImageUrl: null,
   banks: [
-    { name: "BCA", accountNumber: "6975262107", color: "#0068C9" },
-    { name: "BRI", accountNumber: "818001003748538", color: "#00529C" },
+    { name: "BCA", accountNumber: "6975262107", logoImage: bcaLogo, color: "#0068C9" },
+    { name: "BRI", accountNumber: "818001003748538", logoImage: briLogo, color: "#00529C" },
   ],
   eWallets: [
-    { provider: "OVO", number: "085643323957", color: "#4C3494" },
-    { provider: "GoPay", number: "085643323957", color: "#00AED6" },
-    { provider: "ShopeePay", number: "085643323957", color: "#EE4D2D" },
+    { provider: "OVO", number: "085643323957", logoImage: ovoLogo, color: "#4C3494" },
+    { provider: "GoPay", number: "085643323957", logoImage: gopayLogo, color: "#00AED6" },
+    { provider: "ShopeePay", number: "085643323957", logoImage: shopeepayLogo, color: "#EE4D2D" },
   ],
   whatsappNumber: "6285702056901",
 };
