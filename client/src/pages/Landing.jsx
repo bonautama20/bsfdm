@@ -324,8 +324,8 @@ export default function Landing() {
         @keyframes float-slow{0%,100%{transform:translateY(0) rotate(0deg);} 50%{transform:translateY(-16px) rotate(3deg);}}
         .bsfdm .hex-ring{position:absolute; inset:0; margin:auto; width:340px; height:340px; animation:spin 60s linear infinite;}
         @keyframes spin{to{transform:rotate(360deg);}}
-        .bsfdm .hero-card{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:230px; height:230px; border-radius:50%; overflow:hidden; background:var(--surface); box-shadow:var(--shadow-lg); display:flex; align-items:center; justify-content:center; z-index:3;}
-        .bsfdm .hero-card .bug-img{width:78%; height:78%; object-fit:contain; display:block;}
+        .bsfdm .hero-card{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:310px; height:310px; border-radius:50%; overflow:hidden; background:var(--surface); box-shadow:var(--shadow-lg); display:flex; align-items:center; justify-content:center; z-index:3;}
+        .bsfdm .hero-card .bug-img{width:82%; height:82%; object-fit:contain; display:block;}
         .bsfdm .chip{position:absolute; background:var(--surface); border-radius:16px; box-shadow:var(--shadow-md); padding:14px 18px; z-index:4; animation:float-chip 5s ease-in-out infinite;}
         .bsfdm .chip .num{font-family:var(--font-display); font-weight:800; font-size:1.3rem; color:var(--ink);}
         .bsfdm .chip .lbl{font-size:.72rem; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em;}
@@ -334,7 +334,7 @@ export default function Landing() {
         .bsfdm .chip-3{bottom:-10px; left:60px; animation-delay:1.8s;}
         @keyframes float-chip{0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);}}
         @media (max-width:1000px){ .bsfdm .hero-grid{grid-template-columns:1fr;} .bsfdm .hero-visual{height:400px; margin-top:20px;} .bsfdm .hero p.lead{max-width:100%;} }
-        @media (max-width:520px){ .bsfdm .hero{padding-top:140px;} .bsfdm .hero-card{width:170px; height:170px;} .bsfdm .hex-ring{width:250px; height:250px;} }
+        @media (max-width:520px){ .bsfdm .hero{padding-top:140px;} .bsfdm .hero-card{width:230px; height:230px;} .bsfdm .hex-ring{width:250px; height:250px;} }
 
         .bsfdm .feat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:22px;}
         .bsfdm .feat-card{background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:32px 26px; transition:transform .3s ease, box-shadow .3s ease, border-color .3s ease; position:relative; overflow:hidden;}
