@@ -18,8 +18,8 @@ import gopayLogo from "../assets/GOPAY_LOGO.webp";
 import shopeepayLogo from "../assets/SPAY_LOGO.png";
 
 export const paymentConfig = {
-  priceYearly: "Rp 110.000",
-  priceDaily: "Rp 300",
+  priceYearly: "Rp 365.000",
+  priceDaily: "Rp 1.000",
   qrisImageUrl: null,
   banks: [
     { name: "BCA", accountNumber: "6975262107", logoImage: bcaLogo, color: "#0068C9" },
