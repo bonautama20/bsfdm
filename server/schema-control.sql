@@ -107,3 +107,30 @@ CREATE TABLE IF NOT EXISTS communities (
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
+
+-- ---------- BSF Knowledge Base (public landing-page blog, shared/cross-tenant) ----------
+-- Read by anyone (landing page footer -> "BSF Knowledge Base"); only the
+-- platform operator (PLATFORM_OWNER_ORG_ID) can create/edit/delete articles
+-- — see requirePlatformOwner in middleware/auth.js and routes/kbArticles.js.
+-- Every text field is bilingual (site supports EN/ID) rather than one row
+-- per language, so a single article always has both translations in sync.
+-- `body_en`/`body_id` store paragraphs separated by a blank line (\n\n),
+-- split into an array at render time — simplest thing that lets the admin
+-- edit body copy in a plain textarea. `slug` is assigned once at creation
+-- (from title_en) and never changes, so published links keep working.
+CREATE TABLE IF NOT EXISTS kb_articles (
+  id           TEXT PRIMARY KEY,
+  slug         TEXT NOT NULL UNIQUE,
+  category_en  TEXT NOT NULL,
+  category_id  TEXT NOT NULL,
+  title_en     TEXT NOT NULL,
+  title_id     TEXT NOT NULL,
+  excerpt_en   TEXT NOT NULL,
+  excerpt_id   TEXT NOT NULL,
+  body_en      TEXT NOT NULL,
+  body_id      TEXT NOT NULL,
+  read_minutes INTEGER NOT NULL DEFAULT 5,
+  published_at TEXT NOT NULL,
+  created_at   TEXT NOT NULL,
+  updated_at   TEXT NOT NULL
+);

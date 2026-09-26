@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, Layers, Receipt, CalendarDays, Building2, Handshake, FileBarChart2,
-  Bell, Settings, ChevronLeft, Users, Lock, Sparkles, ShieldCheck,
+  Bell, Settings, ChevronLeft, Users, Lock, Sparkles, ShieldCheck, BookOpen,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useLanguage } from "../../context/LanguageContext.jsx";
@@ -71,6 +71,16 @@ export default function Sidebar({ collapsed, onToggle }) {
           >
             <Sparkles size={19} />
             <span>{t("sidebar.upgrade")}</span>
+          </NavLink>
+        )}
+        {isPlatformOwner && (
+          <NavLink
+            to="/dashboard/knowledge-base"
+            className={({ isActive }) => `db-nav-item${isActive ? " active" : ""}`}
+            title={t("sidebar.knowledgeBase")}
+          >
+            <BookOpen size={19} />
+            <span>{t("sidebar.knowledgeBase")}</span>
           </NavLink>
         )}
         {isPlatformOwner && (

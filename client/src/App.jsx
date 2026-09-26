@@ -9,6 +9,8 @@ import LoginPage from "./pages/Login.jsx";
 import RegisterPage from "./pages/Register.jsx";
 import ForgotPasswordPage from "./pages/ForgotPassword.jsx";
 import ResetPasswordPage from "./pages/ResetPassword.jsx";
+import KnowledgeBasePage from "./pages/KnowledgeBase.jsx";
+import KnowledgeBaseArticlePage from "./pages/KnowledgeBaseArticle.jsx";
 
 // ---------- Admin (desktop panel) ----------
 import ProtectedRoute from "./admin/ProtectedRoute.jsx";
@@ -27,6 +29,7 @@ import Notifications from "./admin/pages/Notifications.jsx";
 import Settings from "./admin/pages/Settings.jsx";
 import Upgrade from "./admin/pages/Upgrade.jsx";
 import PlatformAdmin from "./admin/pages/PlatformAdmin.jsx";
+import KnowledgeBaseAdmin from "./admin/pages/KnowledgeBase.jsx";
 import PlatformOwnerGate from "./admin/PlatformOwnerGate.jsx";
 
 // ---------- Operator (mobile-first field module) ----------
@@ -57,6 +60,8 @@ export default function App() {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
+              <Route path="/knowledge-base/:slug" element={<KnowledgeBaseArticlePage />} />
 
               <Route
                 path="/dashboard"
@@ -78,6 +83,7 @@ export default function App() {
                 <Route path="notifications" element={<PlanGate module="Notification"><Notifications /></PlanGate>} />
                 <Route path="settings" element={<PlanGate module="Setting"><Settings /></PlanGate>} />
                 <Route path="upgrade" element={<Upgrade />} />
+                <Route path="knowledge-base" element={<PlatformOwnerGate><KnowledgeBaseAdmin /></PlatformOwnerGate>} />
                 <Route path="platform" element={<PlatformOwnerGate><PlatformAdmin /></PlatformOwnerGate>} />
               </Route>
 

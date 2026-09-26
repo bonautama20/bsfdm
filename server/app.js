@@ -26,6 +26,7 @@ import demoRequestsRouter from "./routes/demoRequests.js";
 import communitiesRouter from "./routes/communities.js";
 import billingRouter from "./routes/billing.js";
 import platformRouter from "./routes/platform.js";
+import kbArticlesRouter from "./routes/kbArticles.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const isProd = process.env.NODE_ENV === "production";
@@ -131,6 +132,13 @@ app.use("/api/auth", authRouter);
 // numbers, no auth required. Must stay mounted before requireAuth below.
 app.use("/api/community", communityPublicRouter);
 app.use("/api/demo-requests", demoRequestsRouter);
+
+// BSF Knowledge Base (public landing-page blog) — GET is public/unauthenticated
+// like community above, but its own POST/PATCH/DELETE routes apply
+// requireAuth + requirePlatformOwner internally (see routes/kbArticles.js),
+// so it must be mounted before the blanket requireAuth below rather than
+// after it.
+app.use("/api/kb-articles", kbArticlesRouter);
 
 // Every other /api route requires a valid session from here on.
 app.use("/api", requireAuth);

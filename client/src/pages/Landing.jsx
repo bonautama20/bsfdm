@@ -1063,6 +1063,7 @@ export default function Landing() {
                 <ul>
                   <li><a href="#about">{t("landing.footer.about")}</a></li>
                   <li><a href="#contact">{t("landing.footer.contact")}</a></li>
+                  <li><a href="/knowledge-base" onClick={(e) => { e.preventDefault(); navigate("/knowledge-base"); }}>{t("landing.footer.knowledgeBase")}</a></li>
                   <li><a href="#" onClick={(e) => { e.preventDefault(); setPrivacyOpen(true); }}>{t("landing.footer.privacyPolicy")}</a></li>
                   <li><a href="#" onClick={(e) => { e.preventDefault(); setTermsOpen(true); }}>{t("landing.footer.termsConditions")}</a></li>
                 </ul>

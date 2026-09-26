@@ -2,7 +2,7 @@ import { DatabaseSync } from "node:sqlite";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { seedControlBase, seedDemoOrgAndUsers, migrateRolePermissions, DEMO_ORG_ID } from "./seed.js";
+import { seedControlBase, seedDemoOrgAndUsers, migrateRolePermissions, seedKbArticles, DEMO_ORG_ID } from "./seed.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // The CONTROL database — auth (users/roles/permissions), the organization
@@ -77,6 +77,16 @@ if (roleCount === 0) {
   // Fills in any (role, module) permission rows a fresh seed already has but
   // an older existing database doesn't yet (e.g. a module added later).
   migrateRolePermissions(db);
+}
+
+// Seeded independently of the "brand-new control database" check above, so
+// an already-running install that only just gained the kb_articles table
+// (via the CREATE TABLE IF NOT EXISTS in schema-control.sql) still gets the
+// starter Knowledge Base articles once, instead of staying permanently empty.
+const { count: kbArticleCount } = db.prepare("SELECT COUNT(*) AS count FROM kb_articles").get();
+if (kbArticleCount === 0) {
+  console.log("[db] No Knowledge Base articles yet — seeding starter content...");
+  seedKbArticles(db);
 }
 
 // MAX(numeric suffix) + 1, not COUNT(*) — COUNT drifts below the highest id

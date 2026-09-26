@@ -15,6 +15,7 @@ import {
   roles, rolePermissions, users, notificationTypes, maggotBatches, eggBatches,
   breederCages, kasgotBatches, salesTransactions, calendarEvents, communities,
 } from "../client/src/data/dummyData.js";
+import { KB_SEED_ARTICLES } from "./data/kbSeedArticles.js";
 
 export const DEMO_ORG_ID = "ORG-DEMO";
 
@@ -41,6 +42,29 @@ export function seedControlBase(db) {
   const communityTs = new Date().toISOString();
   communities.forEach((c, i) => {
     insertCommunity.run(`KOM-${String(i + 1).padStart(3, "0")}`, c.name, c.phone, c.address, c.kabupaten, c.provinsi, communityTs, communityTs);
+  });
+}
+
+// Starter content for the public BSF Knowledge Base (landing page footer ->
+// "BSF Knowledge Base") — shared/cross-tenant like the Community directory
+// above, and seeded independently of it: called whenever kb_articles is
+// empty (see server/db.js), not gated behind the "brand-new control
+// database" check, so it also backfills an already-running install that
+// only just gained this table. Body paragraphs are joined with a blank line
+// to match how routes/kbArticles.js stores and splits article body text.
+export function seedKbArticles(db) {
+  const insert = db.prepare(
+    `INSERT INTO kb_articles
+      (id, slug, category_en, category_id, title_en, title_id, excerpt_en, excerpt_id, body_en, body_id, read_minutes, published_at, created_at, updated_at)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+  );
+  const ts = new Date().toISOString();
+  KB_SEED_ARTICLES.forEach((a, i) => {
+    insert.run(
+      `ART-${String(i + 1).padStart(3, "0")}`,
+      a.slug, a.categoryEn, a.categoryId, a.titleEn, a.titleId, a.excerptEn, a.excerptId,
+      a.bodyEn.join("\n\n"), a.bodyId.join("\n\n"), a.readMinutes, a.publishedAt, ts, ts
+    );
   });
 }
 
