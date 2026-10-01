@@ -171,7 +171,13 @@ app.use("/api", miscRouter);
 // Skipped if client/dist hasn't been built.
 if (isProd && servesOwnFrontend) {
   app.use(express.static(distPath));
-  app.get(/^(?!\/api).*/, (req, res) => {
+  // Excludes /uploads too, not just /api — otherwise a missing or
+  // already-deleted Knowledge Base image (express.static on KB_UPLOADS_DIR
+  // above calls next() rather than 404ing itself) would fall through to
+  // here and get served the SPA's index.html with a 200, instead of a
+  // real 404 a broken <img> tag (or anything else probing that path) can
+  // actually act on.
+  app.get(/^(?!\/api|\/uploads).*/, (req, res) => {
     res.sendFile(path.join(distPath, "index.html"));
   });
   console.log("[server] Serving built frontend from client/dist");
