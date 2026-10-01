@@ -131,6 +131,13 @@ CREATE TABLE IF NOT EXISTS kb_articles (
   body_id      TEXT NOT NULL,
   read_minutes INTEGER NOT NULL DEFAULT 5,
   published_at TEXT NOT NULL,
+  -- JSON array of up to 5 uploaded image URLs (e.g. ["/uploads/kb/<id>.webp"]),
+  -- in display order — images[0] doubles as the card/hero cover image. See
+  -- routes/kbArticles.js's upload endpoints and KB_UPLOADS_DIR. Added after
+  -- the table already existed in some deployments, so db.js also runs
+  -- ensureColumn() for it — CREATE TABLE IF NOT EXISTS alone only helps a
+  -- brand-new database.
+  images       TEXT NOT NULL DEFAULT '[]',
   created_at   TEXT NOT NULL,
   updated_at   TEXT NOT NULL
 );

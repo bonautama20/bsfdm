@@ -4,6 +4,7 @@ import Modal from "../../components/ui/Modal.jsx";
 import ConfirmDialog from "../../components/ui/ConfirmDialog.jsx";
 import Badge from "../../components/ui/Badge.jsx";
 import DataTable from "../../components/ui/DataTable.jsx";
+import KbImageUploader from "../components/KbImageUploader.jsx";
 import { api } from "../../api/client.js";
 import { useLanguage } from "../../context/LanguageContext.jsx";
 import { fmtDate } from "../../utils/format.js";
@@ -24,6 +25,7 @@ const emptyForm = {
   bodyEn: "", bodyId: "",
   readMinutes: 5,
   publishedAt: todayISO(),
+  images: [],
 };
 
 export default function KnowledgeBaseAdmin() {
@@ -63,6 +65,7 @@ export default function KnowledgeBaseAdmin() {
       bodyEn: a.body.en.join("\n\n"), bodyId: a.body.id.join("\n\n"),
       readMinutes: a.readMinutes,
       publishedAt: a.publishedAt,
+      images: a.images || [],
     });
     setModalOpen(true);
   };
@@ -104,9 +107,16 @@ export default function KnowledgeBaseAdmin() {
 
   const columns = [
     { key: "title", label: t("kbAdmin.colTitle"), sortable: true, sortValue: (a) => a.title.en, render: (a) => (
-      <div>
-        <div style={{ fontWeight: 700 }}>{a.title.en}</div>
-        <div style={{ fontSize: ".78rem", color: "var(--db-muted)" }}>{a.title.id}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {a.images?.[0] ? (
+          <img src={a.images[0]} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", flexShrink: 0, border: "1px solid var(--db-line)" }} />
+        ) : (
+          <div style={{ width: 40, height: 40, borderRadius: 8, flexShrink: 0, background: "var(--db-canvas)", border: "1px solid var(--db-line)" }} />
+        )}
+        <div>
+          <div style={{ fontWeight: 700 }}>{a.title.en}</div>
+          <div style={{ fontSize: ".78rem", color: "var(--db-muted)" }}>{a.title.id}</div>
+        </div>
       </div>
     ) },
     { key: "category", label: t("kbAdmin.colCategory"), sortable: true, sortValue: (a) => a.category.en, render: (a) => <Badge tone="green">{a.category.en}</Badge> },
@@ -181,7 +191,12 @@ export default function KnowledgeBaseAdmin() {
             </div>
           </div>
 
-          <h4 style={{ margin: "18px 0 10px", fontSize: ".82rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: ".03em", color: "var(--db-muted)" }}>
+          <h4 style={{ margin: "18px 0 0", fontSize: ".82rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: ".03em", color: "var(--db-muted)" }}>
+            {t("kbAdmin.sectionImages")}
+          </h4>
+          <KbImageUploader images={form.images} onChange={(images) => setForm({ ...form, images })} />
+
+          <h4 style={{ margin: "22px 0 10px", fontSize: ".82rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: ".03em", color: "var(--db-muted)" }}>
             {t("kbAdmin.sectionEnglish")}
           </h4>
           <div className="db-field"><label>{t("kbAdmin.fieldCategory")}</label><input value={form.categoryEn} onChange={(e) => setForm({ ...form, categoryEn: e.target.value })} required maxLength={60} /></div>

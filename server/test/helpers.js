@@ -25,6 +25,9 @@ export function cleanupTestDb() {
   if (process.env.TENANT_DB_DIR) {
     fs.rmSync(process.env.TENANT_DB_DIR, { force: true, recursive: true });
   }
+  if (process.env.KB_UPLOADS_DIR) {
+    fs.rmSync(process.env.KB_UPLOADS_DIR, { force: true, recursive: true });
+  }
 }
 
 export function makeClient(baseUrl) {

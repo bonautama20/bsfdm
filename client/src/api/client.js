@@ -7,11 +7,16 @@
 const API_BASE = import.meta.env.VITE_API_BASE || "/api";
 
 async function request(path, options = {}) {
+  // FormData (file uploads) must go out with no explicit Content-Type — the
+  // browser sets `multipart/form-data; boundary=...` itself, and the
+  // boundary is lost if we override it. Everything else is plain JSON, as
+  // before.
+  const isFormData = options.body instanceof FormData;
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     credentials: "include", // send the httpOnly auth cookie on every request
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
-    body: options.body ? JSON.stringify(options.body) : undefined,
+    headers: isFormData ? options.headers : { "Content-Type": "application/json", ...(options.headers || {}) },
+    body: isFormData ? options.body : (options.body ? JSON.stringify(options.body) : undefined),
   });
 
   if (!res.ok) {
@@ -42,4 +47,6 @@ export const api = {
   put: (path, body) => request(path, { method: "PUT", body }),
   patch: (path, body) => request(path, { method: "PATCH", body }),
   delete: (path) => request(path, { method: "DELETE" }),
+  // body is a FormData instance (e.g. new FormData().append("images", file)).
+  upload: (path, formData) => request(path, { method: "POST", body: formData }),
 };

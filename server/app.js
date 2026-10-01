@@ -26,7 +26,7 @@ import demoRequestsRouter from "./routes/demoRequests.js";
 import communitiesRouter from "./routes/communities.js";
 import billingRouter from "./routes/billing.js";
 import platformRouter from "./routes/platform.js";
-import kbArticlesRouter from "./routes/kbArticles.js";
+import kbArticlesRouter, { KB_UPLOADS_DIR } from "./routes/kbArticles.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const isProd = process.env.NODE_ENV === "production";
@@ -139,6 +139,12 @@ app.use("/api/demo-requests", demoRequestsRouter);
 // so it must be mounted before the blanket requireAuth below rather than
 // after it.
 app.use("/api/kb-articles", kbArticlesRouter);
+
+// Uploaded Knowledge Base article images — publicly readable (same trust
+// model as the articles themselves), read-only (writes only happen through
+// POST/DELETE /api/kb-articles/uploads above, which are owner-gated and
+// never touch this static mount).
+app.use("/uploads/kb", express.static(KB_UPLOADS_DIR));
 
 // Every other /api route requires a valid session from here on.
 app.use("/api", requireAuth);

@@ -66,6 +66,12 @@ export function ensureColumn(targetDb, table, column, type) {
   }
 }
 
+// kb_articles.images was added after some deployments already had the table
+// (CREATE TABLE IF NOT EXISTS above only helps a brand-new database) — patch
+// it in unconditionally, every boot; ensureColumn is a no-op once the column
+// exists.
+ensureColumn(db, "kb_articles", "images", "TEXT NOT NULL DEFAULT '[]'");
+
 const { count: roleCount } = db.prepare("SELECT COUNT(*) AS count FROM roles").get();
 if (roleCount === 0) {
   console.log("[db] Empty control database — seeding roles/permissions, Community directory, and the demo organization...");

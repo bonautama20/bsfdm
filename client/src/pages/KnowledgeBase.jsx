@@ -108,10 +108,15 @@ export default function KnowledgeBasePage() {
         @media (max-width:980px){ .kb-grid{grid-template-columns:repeat(2, 1fr);} }
         @media (max-width:680px){ .kb-grid{grid-template-columns:1fr;} }
 
-        .kb-card{display:flex; flex-direction:column; background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:28px; box-shadow:var(--shadow-sm); transition:transform .25s ease, box-shadow .25s ease; height:100%;}
+        .kb-card{display:flex; flex-direction:column; background:var(--surface); border:1px solid var(--line); border-radius:18px; overflow:hidden; box-shadow:var(--shadow-sm); transition:transform .25s ease, box-shadow .25s ease; height:100%;}
         .kb-card:hover{transform:translateY(-4px); box-shadow:var(--shadow-md);}
-        .kb-card .kb-cat-tag{align-self:flex-start; font-family:var(--font-display); font-weight:700; font-size:.68rem; letter-spacing:.08em; text-transform:uppercase; color:var(--green-deep); background:var(--green-light); padding:5px 12px; border-radius:99px;}
-        .kb-card h3{font-size:1.15rem; margin-top:16px; line-height:1.35;}
+        .kb-card-cover{position:relative; aspect-ratio:16/9; background:linear-gradient(135deg, var(--green-light), #fdfdfb); overflow:hidden; flex-shrink:0;}
+        .kb-card-cover img{width:100%; height:100%; object-fit:cover; display:block; transition:transform .45s ease;}
+        .kb-card:hover .kb-card-cover img{transform:scale(1.06);}
+        .kb-card-cover-ic{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--green); opacity:.3;}
+        .kb-card-body{padding:24px 26px 26px; display:flex; flex-direction:column; flex:1;}
+        .kb-card .kb-cat-tag{position:absolute; top:14px; left:14px; z-index:2; font-family:var(--font-display); font-weight:700; font-size:.66rem; letter-spacing:.08em; text-transform:uppercase; color:var(--green-deep); background:rgba(255,255,255,.92); backdrop-filter:blur(4px); padding:5px 11px; border-radius:99px; box-shadow:var(--shadow-sm);}
+        .kb-card h3{font-size:1.15rem; margin-top:0; line-height:1.35;}
         .kb-card p.kb-excerpt{margin-top:10px; font-size:.92rem; flex:1;}
         .kb-card .kb-meta{display:flex; align-items:center; gap:14px; margin-top:20px; font-size:.78rem; color:var(--muted); font-weight:600;}
         .kb-card .kb-meta span{display:inline-flex; align-items:center; gap:5px;}
@@ -200,16 +205,25 @@ export default function KnowledgeBasePage() {
                     navigate(`/knowledge-base/${article.slug}`);
                   }}
                 >
-                  <span className="kb-cat-tag">{article.category[lang] || article.category.en}</span>
-                  <h3>{article.title[lang] || article.title.en}</h3>
-                  <p className="kb-excerpt">{article.excerpt[lang] || article.excerpt.en}</p>
-                  <div className="kb-meta">
-                    <span>{formatDate(article.publishedAt)}</span>
-                    <span><Clock size={13} />{t("kb.minRead", { n: article.readMinutes })}</span>
+                  <div className="kb-card-cover">
+                    <span className="kb-cat-tag">{article.category[lang] || article.category.en}</span>
+                    {article.images?.[0] ? (
+                      <img src={article.images[0]} alt="" loading="lazy" />
+                    ) : (
+                      <span className="kb-card-cover-ic"><BookOpen size={38} /></span>
+                    )}
                   </div>
-                  <span className="kb-read-link">
-                    {t("kb.readMore")} <ArrowRight size={15} />
-                  </span>
+                  <div className="kb-card-body">
+                    <h3>{article.title[lang] || article.title.en}</h3>
+                    <p className="kb-excerpt">{article.excerpt[lang] || article.excerpt.en}</p>
+                    <div className="kb-meta">
+                      <span>{formatDate(article.publishedAt)}</span>
+                      <span><Clock size={13} />{t("kb.minRead", { n: article.readMinutes })}</span>
+                    </div>
+                    <span className="kb-read-link">
+                      {t("kb.readMore")} <ArrowRight size={15} />
+                    </span>
+                  </div>
                 </a>
               ))}
             </div>

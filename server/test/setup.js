@@ -21,4 +21,8 @@ process.env.DB_PATH = path.join(__dirname, `test.${process.pid}.sqlite3`);
 // spawns (see server/tenantDb.js) — otherwise two test processes would
 // race to create/seed the same tenants/ORG-DEMO.sqlite3 file.
 process.env.TENANT_DB_DIR = path.join(__dirname, `test.${process.pid}.tenants`);
+// Same per-process isolation for uploaded Knowledge Base images (see
+// routes/kbArticles.js's KB_UPLOADS_DIR) — otherwise the test suite would
+// write real files into the shared dev/production uploads folder.
+process.env.KB_UPLOADS_DIR = path.join(__dirname, `test.${process.pid}.kb-uploads`);
 process.env.JWT_SECRET = "test-only-secret-do-not-use-in-production";
