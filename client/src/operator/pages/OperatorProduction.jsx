@@ -20,16 +20,18 @@ export default function OperatorProduction() {
     <>
       <BackHeader title={t("operatorProduction.title")} to="/operator" />
       <div className="op-content">
-        {items.map((item) => (
-          <button key={item.to} className="op-list-card" style={{ width: "100%" }} onClick={() => navigate(item.to)}>
-            <div className="ic-wrap"><item.icon size={22} /></div>
-            <div className="body">
-              <div className="lbl">{item.label}</div>
-              <div className="sub">{item.sub}</div>
-            </div>
-            <ChevronRight size={18} className="chev" />
-          </button>
-        ))}
+        <div className="op-list-grid">
+          {items.map((item) => (
+            <button key={item.to} className="op-list-card" style={{ width: "100%" }} onClick={() => navigate(item.to)}>
+              <div className="ic-wrap"><item.icon size={22} /></div>
+              <div className="body">
+                <div className="lbl">{item.label}</div>
+                <div className="sub">{item.sub}</div>
+              </div>
+              <ChevronRight size={18} className="chev" />
+            </button>
+          ))}
+        </div>
       </div>
     </>
   );

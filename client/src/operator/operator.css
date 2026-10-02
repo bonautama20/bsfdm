@@ -192,3 +192,49 @@
 @media (max-width:340px){
   .op-menu-grid{ grid-template-columns:1fr; }
 }
+
+/* ===========================================================
+   Tablet adaptations — everything above is mobile-first; these
+   widen the phone-frame shell (previously capped at 480px on
+   every viewport, so a tablet just saw a tiny phone mockup
+   floating in empty space) and reflow the layouts that benefit
+   from the extra width. Forms and the success screen are
+   deliberately NOT widened to the full shell — a form input or a
+   paragraph stretched across 800px is harder to scan, not easier
+   — they stay at a comfortable reading width and center within
+   the wider shell instead.
+=========================================================== */
+@media (min-width:768px){
+  .op-shell{ max-width:720px; }
+  .op-header{ padding:28px 36px 32px; }
+  .op-back-header{ padding:20px 36px; }
+  .op-content{ padding:28px 36px 110px; }
+  .op-greeting h1{ font-size:1.55rem; }
+
+  /* Home menu + Production list: both go from a cramped 2-up grid /
+     full-width stacked list to a layout that actually uses the width. */
+  .op-menu-grid{ grid-template-columns:repeat(3, 1fr); gap:16px; }
+  .op-list-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .op-list-grid .op-list-card{ margin-bottom:0; }
+
+  /* Forms, the success screen, and the profile card read as a single
+     flowing column no matter how wide the shell is — cap and center
+     them rather than stretching inputs/text edge to edge. */
+  .op-content form{ max-width:520px; margin:0 auto; }
+  .op-success{ max-width:460px; margin:0 auto; }
+  .op-profile-card{ max-width:460px; margin:0 auto; }
+
+  /* Month calendar: let cells grow a little, but cap how wide the
+     whole grid gets so a date cell doesn't become a huge square. */
+  .op-cal-grid{ max-width:600px; margin:0 auto; }
+
+  .op-bottom-nav{ padding:10px 20px calc(10px + env(safe-area-inset-bottom)); }
+  .op-nav-item{ font-size:.72rem; gap:5px; }
+}
+
+/* Landscape tablets / larger screens — one more size step once there's
+   enough width for a 4th menu column without cramping the label text. */
+@media (min-width:1024px){
+  .op-shell{ max-width:860px; }
+  .op-menu-grid{ grid-template-columns:repeat(4, 1fr); }
+}
